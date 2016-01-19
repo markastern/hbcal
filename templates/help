@@ -1,0 +1,205 @@
+DATES
+        The date to be converted comprises three integers: date (of month),
+        month and year. If only two values are provided, the current year
+        is used. If only one value is provided, the current month and year
+        are used. If no value is provided, the current date is used.
+
+        Negative dates can be used to count back from the end of the month
+        e.g. use date=-1 for the last day of the month. Similarly, negative
+        months can be used for the last month of the year.
+
+CALENDARS
+
+        All the calendars are assumed to extrapolate back to the creation of
+        the world, except Daf Yomi which extrapolates back to the start of the
+        first Daf Yomi cycle. Calendars specified on the command line and in
+        the configuration file may be specified in mixed case and may be
+        abbreviated.
+
+        Zero or more output calendars may be specified. At most one of
+        'civil', 'julian', 'gregorian' may be specified.
+
+        The following calendars are supported:
+
+    julian: The Julian Calendar
+
+        The Julian calendar has a leap year (February has 29 days) every 4
+        years (when the year is divisible by 4). The months are:
+
+{civil_months}
+
+    gregorian: The Gregorian calendar
+
+        The Gregorian calendar has a leap year (February has 29 days) every 4
+        years (when the year is divisible by 4), except when the year is
+        divisble by 100 but not 400. For example, 1800 and 1900 were not leap
+        years but 2000 was a leap year. The months are the same as for the
+        Julian calendar.
+
+    civil: The civil calendar
+
+        The civil calendar is the calendar as used in England. The calendar
+        changed from the Julian to the Gregorian calendar in September 1752.
+        There was then a difference of 11 days between the calendars, so the
+        date jumped from 2nd September (Julian) to 14th September (Gregorian).
+        The months are the same as for the Julian calendar.
+
+    hebrew: The Hebrew calendar
+
+        The Hebrew calendar has 12 or 13 months in a year. The months are:
+
+{hebrew_months}
+
+        The above numbering complies with Exodus 12 v2, and also ensures that
+        months have consistent numbers. However, the year starts with {Tishri:{fmt}}.
+        Month 13 is always accepted as valid, but is converted to {Adar Rishon:{fmt}}
+        in a year with 12 months. Similarly, the 30th of {Cheshvan:{fmt}}, which
+        sometimes has 29 days and sometimes has 30 days, is converted to the
+        1st of {Kislev:{fmt}} in a year in which {Cheshvan:{fmt}} has 29 days. The 30th of
+        {Kislev:{fmt}}, which sometimes has 29 days and sometimes has 30 days, is
+        converted to the 1st of {Teveth:{fmt}} in a year in which {Kislev:{fmt}} has 29 days.
+
+        When used as the input calendar in conjunction with the current date,
+        the date is assumed to start at 6pm local time.
+
+    daf: The Daf Yomi calendar
+
+        Months of the Daf Yomi calendar represent tractates of the Babylonian
+        Talmud. They are numbered in hbcal as follows:
+
+{tractates}
+
+        {Kinnim:{fmt}}, {Tamid:{fmt}} and {Middos:{fmt}} are considered to be parts of tractate {Meilah:{fmt}}.
+
+        Years of the Daf Yomi calendar represent Daf Yomi cycles.
+
+        Starting from the 8th cycle of Daf Yomi, a different edition of
+        {Shekalim:{fmt}} is used, with 21 daf instead of 12.
+
+        When used as the input calendar in conjunction with the current date,
+        the date is assumed to start at 6pm local time if dafbind is set to
+        'hebrew'.
+
+OUTPUT FORMATS FOR HEBREW
+
+        Output formats specified on the command line and in the configuration
+        file may be specified in mixed case and may be abbreviated. They are
+        used for output of Hebrew only. The following output formats are
+        supported.
+
+    Normal
+
+        This is the default output format. Hebrew text is output as UTF-8
+        from right to left. This only works correctly if the terminal emulator
+        being used supports bi-directional output.
+
+    Reverse
+
+        Hebrew text is output as UTF-8 from left to right. This output format
+        should be used with a terminal emulator that does not support
+        bi-directional output.
+
+    Phonetics
+
+        Hebrew words are translated to English. If no equivalent English
+        exists, they are transliterated.
+
+    HTML
+
+        Hebrew characters are output as HTML codes for UTF-8 characters from
+        right to left. This is intended for use on web pages.
+
+SEDRAH
+
+        If the sedrah parameter is set, the current weekly sedrah is also
+        output. This is usually the weekly portion read on the current or
+        next shabbat, except if that shabbat is a festival or if Simchat
+        Torah occurs midweek. The sedrah output is for the disapora (default)
+        unless the israel parameter is set.
+
+MOLAD
+
+        If the molad parameter is set, the molad (mean lunar conjunction) for
+        the hebrew month containing the input date is output according to all
+        the calendars defined by the output calendar parameter. In this case,
+        the input date itself is not output.
+
+OMER
+
+        If the omer parameter is set, the date of the omer is also output,
+        provided that the date is between pesach and shavuot. If the date is
+        outside this range, the parameter is ignored without an error.
+
+CONFIGURATION FILE
+
+        The location of the optional configuration file is '.hbcal.config' in
+        the user's home directory. The file, if it exists, should be a
+        standard INI file. It can contain the following sections:
+
+    hbcal
+
+        This section contains defaults for the command line options. Command
+        line parameters will always override settings in the
+        configuration file. Parameter values can be mixed case and can be
+        abbreviated. The following parameters are accepted:
+
+        input calendar
+
+            Equivalent to --input on the command line
+
+        output calendar
+
+            Equivalent to --output on the command line
+
+        dafbind
+
+            Equivalent to --dafbind on the command line
+
+        format
+
+            Equivalent to --format on the command line
+
+        sedrah
+
+            Allowed values are:
+                'true', 'yes' (equivalent to --sedrah on the command line)
+                'false', 'no' (equivalent to --nosedrah on the command line)
+
+        omer
+
+            Allowed values are:
+                'true', 'yes' (equivalent to --omer on the command line)
+                'false', 'no' (equivalent to --noomer on the command line)
+
+        molad
+
+            Allowed values are:
+                'true', 'yes' (equivalent to --molad on the command line)
+                'false', 'no' (equivalent to --nomolad on the command line)
+
+        israel
+
+            Allowed values are:
+                'true', 'yes' (equivalent to --israel on the command line)
+                'false', 'no' (equivalent to --noisrael on the command line)
+
+    loggers, handlers, formatters
+
+        These sections define the loggers, handlers and formatters used by
+        logging. See https://docs.python.org/2/library/logging.config.html.
+
+    logger_xxx
+
+        This section defines a logger, where xxx is a key in the loggers
+        section. See https://docs.python.org/2/library/logging.config.html.
+
+    handler_yyy
+
+        This section defines a handler, where yyy is a key in the handlers
+        section. See https://docs.python.org/2/library/logging.config.html.
+
+    formatter_zzz
+
+        This section defines a formatter, handler, where zzz is a key in the
+        formatters section. See
+        https://docs.python.org/2/library/logging.config.html.
