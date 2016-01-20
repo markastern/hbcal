@@ -8,10 +8,9 @@ hbcal is a command line utility to convert dates between the Hebrew calendar and
 * pip
 
 ## installation
-To install, build a tar ball and then run the installation program:
+To install on linux, run the installation program:
 
-* `make`
-* `make test`
+* `make test` (optional)
 * `[sudo] make install`
 
 ## running

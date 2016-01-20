@@ -44,7 +44,7 @@ from hebrew_calendar.hebrew_letters import HebrewString
 from hebrew_calendar.abs_time import AbsTime
 from ordinal import ordinal_suffix
 
-VERSION = 0, 7, 2
+VERSION = 0, 7, 3
 
 CALENDAR_TYPES = {"civil": BritishYear, "gregorian": GregorianYear,
                   "hebrew": HebrewYear, "julian": JulianYear,
