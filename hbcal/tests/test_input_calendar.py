@@ -23,10 +23,10 @@ import unittest
 import logging
 from configuration_utilities import ConfigurationParameterAmbiguousError, \
     ConfigurationParameterValueError
-from tests.utilities import TestCase, hbcal, ConfigurationData
+from utilities import TestCase, hbcal, ConfigurationData
 # Test discovery uses setUpModule, but pylint does not know that.
 # pylint: disable=unused-import
-from tests.utilities import set_up_module as setUpModule  # noqa
+from utilities import set_up_module as setUpModule  # noqa
 
 # pylint: enable=unused-import
 

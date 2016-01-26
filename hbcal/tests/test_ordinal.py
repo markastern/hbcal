@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Hbcal.  If not, see <http://www.gnu.org/licenses/>.
 
-from ordinal import ordinal_suffix
+from hbcal import ordinal_suffix
 import unittest
 
 

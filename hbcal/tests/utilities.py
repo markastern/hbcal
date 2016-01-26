@@ -26,7 +26,7 @@ import os.path
 import unittest
 from enum import Enum
 
-from hbcal import main
+from hbcal import get_output_line
 
 DIRECTORY_NAME = os.path.join(os.getcwd(), 'home')
 FILENAME = os.path.join(DIRECTORY_NAME, '.hbcal.config')
@@ -57,7 +57,7 @@ def hbcal(command_line):
     Return:
         list of output strings.
     """
-    return list(main(command_line.split()))
+    return list(get_output_line(command_line.split()))
 
 
 class ConfigurationData(Enum):

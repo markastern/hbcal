@@ -43,8 +43,7 @@ from hebrew_calendar.hebrew_year import HebrewYear
 from hebrew_calendar.hebrew_letters import HebrewString
 from hebrew_calendar.abs_time import AbsTime
 from ordinal import ordinal_suffix
-
-VERSION = 0, 7, 3
+from version import __version__
 
 CALENDAR_TYPES = {"civil": BritishYear, "gregorian": GregorianYear,
                   "hebrew": HebrewYear, "julian": JulianYear,
@@ -180,8 +179,8 @@ Convert a date to one or more other calendars.""",
                             epilog=epilog)
 
     parser.add_argument('--version', action='version',
-                        version="{name} {0}.{1}.{2}".format(name=prog_name,
-                                                            *VERSION))
+                        version="{name} {version}".
+                        format(name=prog_name, version=__version__))
     parser.add_argument("-i", "--input", nargs=1, action=StoreRestrictiveList,
                         choices=CALENDAR_TYPES, type=str.lower,
                         default=parameters['input calendar'].value,
@@ -270,7 +269,7 @@ def input_date(args, input_class):
                 args.date if args.date is not None else current_date.date)
 
 
-def main(argv=None):
+def get_output_line(argv):
     """Generator that returns lines of output as unicode strings.
 
     Read the configuration file.
@@ -278,9 +277,6 @@ def main(argv=None):
     Return the specified date as a unicode string in a requested calendar.
     Return any other requested information (e.g. weekly sedrah).
     """
-
-    if argv is None:
-        argv = sys.argv
     args, parser = parse_arguments(argv, get_config())
     try:
         date_cache = DateCache(input_date(args, CALENDAR_TYPES[args.input]))
@@ -340,6 +336,12 @@ def main(argv=None):
                                              **output_data)
 
 
-if __name__ == "__main__":
-    for output_line in main(sys.argv):
+def main(argv=None):
+    if argv is None:
+        argv = sys.argv
+    for output_line in get_output_line(argv):
         print(output_line)
+
+
+if __name__ == "__main__":
+    main()
