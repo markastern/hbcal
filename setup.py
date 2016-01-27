@@ -39,7 +39,7 @@ def get_version(package_name):
     Quotes may be single or double. A triple quoted string is valid.
     The quote may be a raw string.
     """
-    PATTERN = re.compile(r'''\A                # start of string
+    pattern = re.compile(r'''\A                # start of string
                              __version__
                              \s+               # one or more spaces
                              =
@@ -58,7 +58,7 @@ def get_version(package_name):
                          flags=re.MULTILINE | re.DOTALL | re.VERBOSE)
     with open(package_name + '/version.py') as version:
         for line in version:
-            matched = PATTERN.match(line)
+            matched = pattern.match(line)
             if matched:
                 return matched.group(3)
             else:

@@ -54,13 +54,14 @@ class TestCase(unittest.TestCase):
     def setUpClass(cls):
         if cls.version_data is None:
             if os.path.isfile(FILENAME):
-                    os.remove(FILENAME)
+                os.remove(FILENAME)
         else:
             with open(FILENAME, 'w') as version_file:
                 version_file.write(cls.version_data)
 
 
 class TestValidVersion(TestCase):
+    """Test a valid version number with an epoch."""
 
     version_data = "__version__ = '1.2.3'\n"
 
@@ -69,7 +70,7 @@ class TestValidVersion(TestCase):
 
 
 class TestEpochVersion(TestCase):
-    """Test a version number with an epoch."""
+    """Test a valid version number with an epoch."""
 
     version_data = "__version__ = '2!2016.1.27rc2'\n"
 
@@ -78,6 +79,7 @@ class TestEpochVersion(TestCase):
 
 
 class TestDoubleQuotes(TestCase):
+    """Test a version number enclosed by double quotes."""
 
     version_data = '__version__ = "1.2.3"\n'
 
@@ -86,6 +88,7 @@ class TestDoubleQuotes(TestCase):
 
 
 class TestTripleQuotes(TestCase):
+    """Test a version number enclosed by triple quotes."""
 
     version_data = '__version__ = """1.2.3"""\n'
 
@@ -94,6 +97,7 @@ class TestTripleQuotes(TestCase):
 
 
 class TestRawString(TestCase):
+    """Test a version number enclosed by a raw quoted string."""
 
     version_data = "__version__ = r'1.2.3'\n"
 
@@ -102,6 +106,11 @@ class TestRawString(TestCase):
 
 
 class TestMismatchedQuotes(TestCase):
+    """Test a version number enclosed by mismatched quotes.
+
+    In this case the version number is invalid and get_version
+    returns None.
+    """
 
     version_data = '__version__ = "1.2.3\'\n'
 
@@ -111,4 +120,3 @@ class TestMismatchedQuotes(TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
