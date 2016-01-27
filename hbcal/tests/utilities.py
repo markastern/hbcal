@@ -65,10 +65,6 @@ class ConfigurationData(Enum):
     EMPTY = 2
 
 
-class BaseString(object):
-    pass
-
-
 class TestCase(unittest.TestCase):
     """Subclass of unittest.TestCase that also sets up configuration file.
 
