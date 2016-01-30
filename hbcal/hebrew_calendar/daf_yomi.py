@@ -17,10 +17,9 @@
 # along with Hbcal.  If not, see <http://www.gnu.org/licenses/>.
 from enum import Enum
 
-from hebrew_calendar.abs_time import AbsTime, DAY
-from hebrew_calendar.hebrew_letters import HebrewString
-from hebrew_calendar.date import Month, Year, Date, DateBeforeCreation,\
-    BadDate
+from abs_time import AbsTime, DAY
+from hebrew_letters import HebrewString
+from date import Month, Year, Date, DateBeforeCreation, BadDate
 
 
 HEBREW_TRACTATE_NAMES = [

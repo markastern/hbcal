@@ -20,11 +20,11 @@ different calendars from a cache.
 # along with Hbcal.  If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
-from hebrew_calendar.weekday import Weekday
-from hebrew_calendar.civil_year import GregorianYear, CivilMonth
-from hebrew_calendar.date import Date
+from hbcal.hebrew_calendar.weekday import Weekday
+from hbcal.hebrew_calendar.civil_year import GregorianYear, CivilMonth
+from hbcal.hebrew_calendar.date import Date
 from hbcal import DateCache
-from hebrew_calendar.hebrew_year import HebrewYear, HebrewMonth
+from hbcal.hebrew_calendar.hebrew_year import HebrewYear, HebrewMonth
 
 
 class TestDateCache(unittest.TestCase):

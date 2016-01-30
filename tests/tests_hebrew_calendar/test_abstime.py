@@ -16,7 +16,7 @@
 
 import unittest
 
-from hebrew_calendar import abs_time
+from hbcal.hebrew_calendar import abs_time
 
 
 class TestEquality(unittest.TestCase):

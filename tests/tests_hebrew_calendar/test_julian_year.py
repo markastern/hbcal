@@ -17,9 +17,9 @@
 import unittest
 import logging
 
-from hebrew_calendar import date
-from hebrew_calendar.civil_year import CivilMonth, JulianYear
-from hebrew_calendar.abs_time import AbsTime
+from hbcal.hebrew_calendar import date
+from hbcal.hebrew_calendar.civil_year import CivilMonth, JulianYear
+from hbcal.hebrew_calendar.abs_time import AbsTime
 
 logging.basicConfig(filename='/dev/stdout', level=logging.DEBUG)
 

@@ -69,19 +69,23 @@ def get_version(package_name):
 if __name__ == "__main__":
     __version__ = get_version('hbcal')
     if __version__ is not None:
+        print("all packages")
+        print(find_packages())
+        print("all packages except tests")
+        print(find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"]))
         setup(name='hbcal',
               version=__version__,
               description='Hebrew Calendar Date Converter',
               author='Mark Stern',
               author_email='markalexstern@gmail.com',
               url='https://github.com/markastern/hbcal',
-              packages=find_packages(),
+              packages=find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"]),
               package_data={'hbcal': ['templates/*']},
               py_modules=['configuration_utilities'],
               entry_points={'console_scripts': ['hbcal = hbcal.main:main']},
               install_requires=['enum34'],
               tests_require=['freezegun'],
-              test_suite='discover_tests')
+              test_suite='tests')
     else:
         print("Error: Version number is invalid", file=sys.stderr)
         sys.exit(1)

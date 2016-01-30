@@ -16,9 +16,9 @@
 
 import unittest
 import logging
-from hebrew_calendar.date import DateNotInRange
+from hbcal.hebrew_calendar.date import DateNotInRange
 
-from hebrew_calendar.hebrew_year import HebrewYear, HebrewMonth
+from hbcal.hebrew_calendar.hebrew_year import HebrewYear, HebrewMonth
 logging.basicConfig(filename='/dev/stdout', level=logging.DEBUG)
 
 

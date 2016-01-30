@@ -17,7 +17,7 @@
 # along with Hbcal.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import division
 import numbers
-from hebrew_calendar.hebrew_letters import HEBREW_LETTERS
+from hebrew_letters import HEBREW_LETTERS
 
 CHALAKIM_IN_HOUR = 1080
 HOURS_IN_DAY = 24

@@ -27,12 +27,11 @@
 from __future__ import division
 from enum import IntEnum
 
-from hebrew_calendar import abs_time
-from hebrew_calendar.abs_time import DAY
-from hebrew_calendar.weekday import DAYS_IN_WEEK, Weekday
-from hebrew_calendar.hebrew_letters import HebrewString
-from hebrew_calendar.date import MonthNotInRange, DateNotInRange, Month,\
-    RegularYear
+import abs_time
+from abs_time import DAY
+from weekday import DAYS_IN_WEEK, Weekday
+from hebrew_letters import HebrewString
+from date import MonthNotInRange, DateNotInRange, Month, RegularYear
 
 HEBREW_MONTH_NAMES = [
     None,

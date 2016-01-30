@@ -17,8 +17,8 @@
 # along with Hbcal.  If not, see <http://www.gnu.org/licenses/>.
 
 from abc import ABCMeta
-from hebrew_calendar.abs_time import AbsTime, DAY
-from hebrew_calendar.date import Month, Date, BadDate, RegularYear, Year
+from abs_time import AbsTime, DAY
+from date import Month, Date, BadDate, RegularYear, Year
 
 
 class CivilMonth(Month):

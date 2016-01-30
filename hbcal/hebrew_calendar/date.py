@@ -22,7 +22,7 @@ import logging
 
 from enum import IntEnum
 
-from hebrew_calendar.abs_time import RelTime, AbsTime, DAY
+from abs_time import RelTime, AbsTime, DAY
 
 # Exception Classes
 

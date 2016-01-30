@@ -17,7 +17,7 @@
 from __future__ import division
 import unittest
 
-from hebrew_calendar import abs_time
+from hbcal.hebrew_calendar import abs_time
 
 
 class TestAddSubtract(unittest.TestCase):
