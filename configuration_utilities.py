@@ -20,6 +20,7 @@ from abc import ABCMeta, abstractmethod
 import argparse
 import sys as _sys
 
+
 class ConfigurationParameterException(Exception):
     """Exception class for errors in the configuration file."""
     pass
