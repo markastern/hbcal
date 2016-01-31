@@ -8,10 +8,10 @@ hbcal is a command line utility to convert dates between the Hebrew calendar and
 * pip
 
 ## installation
-To install on linux, run the installation program:
+To install, run the installation program:
 
-* `make test` (optional)
-* `[sudo] make install`
+* `python setup.py test` (optional)
+* `[sudo] python setup.py install`
 
 ## running
 For help type:
@@ -26,8 +26,7 @@ $ hbcal --sedrah --input civil --output hebrew daf -- 1 1 2016
 גיטין 19
 שמות
 ```
+## changes in version 0.8.0
+Structure reorganized. Makefile replaced with a python setup script.
 
 By Mark Stern (markalexstern@gmail.com)
-
-
-
