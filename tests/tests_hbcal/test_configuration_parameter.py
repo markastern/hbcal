@@ -18,11 +18,12 @@
 
 import unittest
 import logging
-from configuration_utilities import AbbrevList, AmbiguousKeyError,\
+import sys
+from hbcal.configuration_utilities import AbbrevList, AmbiguousKeyError,\
     SingleConfigurationParameter, MultiConfigurationParameter,\
     ConfigurationParameterDefaultError
 
-logging.basicConfig(filename='/dev/stdout', level=logging.DEBUG)
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 
 class TestSingleDefault(unittest.TestCase):
@@ -67,3 +68,7 @@ class TestMultiDefault(unittest.TestCase):
                                                             'value2']),
                                                 ['value2', 'value1'])
         self.assertEqual(parameter.value, ['value2', 'value1'])
+
+
+if __name__ == "__main__":
+    unittest.main()

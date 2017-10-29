@@ -15,10 +15,15 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Hbcal.  If not, see <http://www.gnu.org/licenses/>.
-from ConfigParser import NoSectionError, NoOptionError
+try:
+    from configparser import NoSectionError, NoOptionError
+except ImportError:
+    from ConfigParser import NoSectionError, NoOptionError
+
 from abc import ABCMeta, abstractmethod
 import argparse
 import sys as _sys
+from future.utils import PY2
 
 
 class ConfigurationParameterException(Exception):
@@ -124,7 +129,7 @@ class RestrictiveList(list):
         key = self.allowed[p_object]
         if key in self.mutex_groups:
             holder = self.mutex_groups[key]
-            if len(holder) == 0:
+            if not holder:
                 holder.append(key)
             elif holder[0] != key:
                 raise DuplicateError
@@ -303,21 +308,23 @@ class StoreRestrictiveList(argparse.Action):
             self.restrictive_list.append(value)
 
 
-class ArgumentParserWriteUTF8(argparse.ArgumentParser):
-    """Subclass of ArgumentParser that outputs UTF-8 properly
+class ArgumentParser(argparse.ArgumentParser):
+    """Python 2 version that outputs UTF-8 properly
 
     Standard ArgumentParser in argparse outputs help messages without
     converting to UTF-8. This fails if the message is a unicode string
     containing non-ASCII characters and output is redirected (to a
-    pipe or a file). Unredirected output seems OK. This class fixes it.
-    This class will probably not be needed in Python 3.
+    pipe or a file). Unredirected output seems OK. See
+    http://bugs.python.org/issue9779
+    This class fixes it. It is not needed in Python 3.
     """
-    def _print_message(self, message, file=None):
-        """Ouput message to file, encoded as UTF-8 """
-        if message:
-            if file is None:
-                file = _sys.stderr
-            file.write(message.encode('utf-8'))
+    if PY2:
+        def _print_message(self, message, _file=None):
+            """Output message to file, encoded as UTF-8 """
+            if message:
+                if _file is None:
+                    _file = _sys.stderr
+                _file.write(message.encode('utf-8'))
 
 
 def add_negatable_option(parser, short_option, long_option, default, **kwargs):

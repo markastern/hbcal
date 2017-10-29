@@ -16,12 +16,13 @@
 
 import unittest
 import logging
+import sys
 
 from hbcal.hebrew_calendar import date
 from hbcal.hebrew_calendar.hebrew_year import HebrewYear, HebrewMonth
 from hbcal.hebrew_calendar.abs_time import AbsTime
 
-logging.basicConfig(filename='/dev/stdout', level=logging.DEBUG)
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 
 class TestMolad(unittest.TestCase):

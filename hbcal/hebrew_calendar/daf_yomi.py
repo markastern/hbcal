@@ -17,9 +17,9 @@
 # along with Hbcal.  If not, see <http://www.gnu.org/licenses/>.
 from enum import Enum
 
-from abs_time import AbsTime, DAY
-from hebrew_letters import HebrewString
-from date import Month, Year, Date, DateBeforeCreation, BadDate
+from .abs_time import AbsTime, DAY
+from .hebrew_letters import HebrewString
+from .date import Month, Year, Date, DateBeforeCreation, BadDate
 
 
 HEBREW_TRACTATE_NAMES = [
@@ -106,8 +106,7 @@ class Tractate(Month):
     def __format__(self, fmt):
         if fmt == "":
             return self.name()
-        else:
-            return HebrewString(HEBREW_TRACTATE_NAMES[self]).__format__(fmt)
+        return HebrewString(HEBREW_TRACTATE_NAMES[self]).__format__(fmt)
 
     @staticmethod
     def start_year_month():
@@ -116,6 +115,7 @@ class Tractate(Month):
     @staticmethod
     def end_year_month():
         return Tractate.NIDAH
+
 
 HEBREW_SUBTRACTATE_NAMES = [
     None,
@@ -133,9 +133,8 @@ class SubTractate(Enum):
     def __format__(self, fmt):
         if fmt == "":
             return self.name
-        else:
-            return HebrewString(HEBREW_SUBTRACTATE_NAMES[self.
-                                _value_]).__format__(fmt)
+        return HebrewString(
+            HEBREW_SUBTRACTATE_NAMES[self._value_]).__format__(fmt)
 
 
 class DateBeforeDafYomi(BadDate):

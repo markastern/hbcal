@@ -16,12 +16,14 @@
 
 import unittest
 import logging
+import sys
 
 from hbcal.hebrew_calendar import date
-from hbcal.hebrew_calendar.daf_yomi import DafYomiCycle, Tractate, DateBeforeDafYomi
+from hbcal.hebrew_calendar.daf_yomi import (DafYomiCycle, Tractate,
+                                            DateBeforeDafYomi)
 from hbcal.hebrew_calendar.abs_time import AbsTime
 
-logging.basicConfig(filename='/dev/stdout', level=logging.DEBUG)
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 
 class TestYearStart(unittest.TestCase):
@@ -555,8 +557,8 @@ class TestCurrentDate(unittest.TestCase):
         class DafYomiLowDays(DafYomiCycle):
             @classmethod
             def estimate_current_year(cls, atime):
-                return int(((atime - cls.start_first_year()).days) / 1500 + 0.5) +\
-                    cls.first_year()
+                return int(((atime - cls.start_first_year()).days) /
+                           1500 + 0.5) + cls.first_year()
 
         self.assertEqual(date.Date(DafYomiLowDays(14),
                                    Tractate.BERACHOS, 2),
@@ -567,8 +569,8 @@ class TestCurrentDate(unittest.TestCase):
         class DafYomiHighDays(DafYomiCycle):
             @classmethod
             def estimate_current_year(cls, atime):
-                return int(((atime - cls.start_first_year()).days) / 4000 + 0.5) +\
-                    cls.first_year()
+                return int(((atime - cls.start_first_year()).days)
+                           / 4000 + 0.5) + cls.first_year()
 
         self.assertEqual(date.Date(DafYomiHighDays(14),
                                    Tractate.BERACHOS, 2),

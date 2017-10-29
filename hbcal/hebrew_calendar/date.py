@@ -18,11 +18,12 @@
 
 from __future__ import division
 from abc import ABCMeta, abstractmethod, abstractproperty
+from enum import IntEnum
 import logging
 
-from enum import IntEnum
+from future.builtins import range
 
-from abs_time import RelTime, AbsTime, DAY
+from .abs_time import RelTime, AbsTime, DAY
 
 # Exception Classes
 
@@ -96,12 +97,11 @@ class Date(object):
             self.month = year.month_class()(month)
 
     def __eq__(self, other):
-        if isinstance(other, Date):
-            return (self.year, self.month, self.date) == (other.year,
-                                                          other.month,
-                                                          other.date)
-        else:
+        if not isinstance(other, Date):
             return NotImplemented
+        return (self.year, self.month, self.date) == (other.year,
+                                                      other.month,
+                                                      other.date)
 
     def __ne__(self, other):
         return not self == other
@@ -229,8 +229,8 @@ class Year(object):
 
     def months(self):
         """A generator for the months of the current year."""
-        for month in xrange(self.month_class().start_year_month(),
-                            self.months_in_year() + 1):
+        for month in range(self.month_class().start_year_month(),
+                           self.months_in_year() + 1):
             yield self.month_class()(month)
 
     @abstractmethod
@@ -281,18 +281,16 @@ class Year(object):
         return self
 
     def __add__(self, other):
-        if isinstance(other, int):
-            new_year = self.__class__(self)
-            return new_year.__iadd__(other)
-        else:
+        if not isinstance(other, int):
             return NotImplemented
+        new_year = self.__class__(self)
+        return new_year.__iadd__(other)
 
     def __sub__(self, other):
-        if isinstance(other, int):
-            new_year = self.__class__(self)
-            return new_year.__isub__(other)
-        else:
+        if not isinstance(other, int):
             return NotImplemented
+        new_year = self.__class__(self)
+        return new_year.__isub__(other)
 
     def add_days(self, month, date, days):
         """ Adds the specified number of days to a date in the current year.

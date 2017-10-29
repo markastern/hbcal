@@ -52,5 +52,6 @@ class TestDateCache(unittest.TestCase):
                                CivilMonth.SEPTEMBER, 14)),
                          self.date_cache[GregorianYear])
 
+
 if __name__ == "__main__":
     unittest.main()

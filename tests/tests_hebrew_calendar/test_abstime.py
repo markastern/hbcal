@@ -463,5 +463,6 @@ class TestFormatConstructor(unittest.TestCase):
         abs_time2 = abs_time.AbsTime(absTime=abs_time1, weeks=True, days=True)
         self.assertEqual(abs_time.AbsTime(100, 4), abs_time2)
 
+
 if __name__ == '__main__':
     unittest.main()

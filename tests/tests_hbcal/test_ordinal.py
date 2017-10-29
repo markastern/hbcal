@@ -140,5 +140,6 @@ class TestOrdinal(unittest.TestCase):
     def test_hundred_and_thirty_four(self):
         self.assertEqual("th", ordinal_suffix(134))
 
-    if __name__ == "__main__":
-        unittest.main()
+
+if __name__ == "__main__":
+    unittest.main()

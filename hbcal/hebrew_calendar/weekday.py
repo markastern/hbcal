@@ -25,7 +25,7 @@
 
 from enum import IntEnum
 
-from hebrew_letters import HebrewString
+from .hebrew_letters import HebrewString
 
 DAYS_IN_WEEK = 7
 YOM = HebrewString(u"{YOD}{VAV}{FINAL_MEM}")

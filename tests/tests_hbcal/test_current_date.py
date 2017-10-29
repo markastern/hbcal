@@ -17,16 +17,17 @@
 # along with Hbcal.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
+import sys
 from freezegun import freeze_time
 import unittest
-from utilities import TestCase, hbcal
+from .utilities import TestCase, hbcal
 
 # Test discovery uses setUpModule, but pylint does not know that.
 # pylint: disable=unused-import
-from utilities import set_up_module as setUpModule  # noqa
+from .utilities import set_up_module as setUpModule  # noqa
 # pylint: enable=unused-import
 
-logging.basicConfig(filename='/dev/stdout', level=logging.DEBUG)
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 
 class Wrapper(object):
@@ -276,6 +277,7 @@ class TestSameDafYomiCycleNight(TestCase):
         self.assertEqual(2, len(output))
         self.assertEqual('Thursday 11 July 2013', output[0])
         self.assertEqual('Thursday 4 Av 5773', output[1])
+
 
 if __name__ == "__main__":
     unittest.main()

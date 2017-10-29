@@ -21,16 +21,17 @@ options and for the 'molad' configuration file option.
 
 import unittest
 import logging
-from configuration_utilities import ConfigurationParameterValueError, \
+import sys
+from hbcal.configuration_utilities import ConfigurationParameterValueError, \
     ConfigurationParameterAmbiguousError
-from utilities import ConfigurationData, TestCase, hbcal
+from .utilities import ConfigurationData, TestCase, hbcal
 
 # Test discovery uses setUpModule, but pylint does not know that.
 # pylint: disable=unused-import
-from utilities import set_up_module as setUpModule  # noqa
+from .utilities import set_up_module as setUpModule  # noqa
 # pylint: enable=unused-import
 
-logging.basicConfig(filename='/dev/stdout', level=logging.DEBUG)
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 
 class TestNoConfigFile(TestCase):
@@ -145,6 +146,7 @@ class TestMiscellaneous(TestCase):
         output = hbcal("hbcal -m -ih -oc 1 6 5775")
         self.assertEqual('Saturday 15 August 2015 04:23 and 8 parts',
                          output[0])
+
 
 if __name__ == "__main__":
     unittest.main()

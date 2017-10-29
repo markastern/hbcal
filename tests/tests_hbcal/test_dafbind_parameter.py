@@ -21,17 +21,18 @@ options and for the 'dafbind' configuration file option.
 
 import unittest
 import logging
+import sys
 from freezegun import freeze_time
-from configuration_utilities import ConfigurationParameterValueError, \
+from hbcal.configuration_utilities import ConfigurationParameterValueError, \
     ConfigurationParameterAmbiguousError
-from utilities import ConfigurationData, TestCase, hbcal
+from .utilities import ConfigurationData, TestCase, hbcal
 
 # Test discovery uses setUpModule, but pylint does not know that.
 # pylint: disable=unused-import
-from utilities import set_up_module as setUpModule  # noqa
+from .utilities import set_up_module as setUpModule  # noqa
 # pylint: enable=unused-import
 
-logging.basicConfig(filename='/dev/stdout', level=logging.DEBUG)
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 
 class Wrapper(object):
@@ -207,6 +208,7 @@ class TestInvalidValue(TestCase):
         """Test default value of --dafbind parameter."""
         with self.assertRaises(ConfigurationParameterValueError):
             hbcal("hbcal -id -od -fphonetics")
+
 
 if __name__ == "__main__":
     unittest.main()

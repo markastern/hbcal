@@ -21,16 +21,18 @@ for the 'input calendar' configuration file option.
 
 import unittest
 import logging
-from configuration_utilities import ConfigurationParameterAmbiguousError, \
-    ConfigurationParameterValueError
-from utilities import TestCase, hbcal, ConfigurationData
+import sys
+from hbcal.configuration_utilities import (
+        ConfigurationParameterAmbiguousError,
+        ConfigurationParameterValueError)
+from .utilities import TestCase, hbcal, ConfigurationData
 # Test discovery uses setUpModule, but pylint does not know that.
 # pylint: disable=unused-import
-from utilities import set_up_module as setUpModule  # noqa
+from .utilities import set_up_module as setUpModule  # noqa
 
 # pylint: enable=unused-import
 
-logging.basicConfig(filename='/dev/stdout', level=logging.DEBUG)
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 
 class Wrapper(object):
