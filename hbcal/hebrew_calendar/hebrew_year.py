@@ -1,6 +1,6 @@
 """This file contains classes HebrewMonth and HebrewYear."""
 
-# Copyright 2015 Mark Stern
+# Copyright 2015, 2019 Mark Stern
 #
 # This file is part of Hbcal.
 #
@@ -27,11 +27,13 @@
 from __future__ import division
 from enum import IntEnum
 
-import abs_time
-from abs_time import DAY
-from weekday import DAYS_IN_WEEK, Weekday
-from hebrew_letters import HebrewString
-from date import MonthNotInRange, DateNotInRange, Month, RegularYear
+from future.builtins import range
+
+from . import abs_time
+from .abs_time import DAY
+from .weekday import DAYS_IN_WEEK, Weekday
+from .hebrew_letters import HebrewString
+from .date import MonthNotInRange, DateNotInRange, Month, RegularYear
 
 HEBREW_MONTH_NAMES = [
     None,
@@ -69,8 +71,7 @@ class HebrewMonth(Month):
     def __format__(self, fmt):
         if fmt == "":
             return self.name()
-        else:
-            return HebrewString(HEBREW_MONTH_NAMES[self]).__format__(fmt)
+        return HebrewString(HEBREW_MONTH_NAMES[self]).__format__(fmt)
 
     @staticmethod
     def start_year_month():
@@ -79,6 +80,7 @@ class HebrewMonth(Month):
     @staticmethod
     def end_year_month():
         return HebrewMonth.ELLUL
+
 
 HEBREW_SEDRAH_NAMES = [
     None,
@@ -217,6 +219,7 @@ class Sedrah(IntEnum):
                                        "-" if self > Sedrah.VZOTH_HABERACHAH
                                        else " ") if fmt == ""
                 else HebrewString(HEBREW_SEDRAH_NAMES[self]).__format__(fmt))
+
 
 RH_SAT_TABLE = (Sedrah.HAAZINU,           # Rosh Hashonah
                 Sedrah.HAAZINU,
@@ -535,6 +538,8 @@ class HebrewYear(RegularYear):
     # The year of the first molad
     FIRST_YEAR = 2
 
+    START_FIRST_YEAR = FIRST_MOLAD
+
     # GaTRaD and BTUTKPaT are explained in start_year below.
     # GaTRaD : Gimmel = Day 3 (Tuesday), Tet = 9 (Hours),
     # Reish Dalet = 204 chalakim
@@ -551,20 +556,13 @@ class HebrewYear(RegularYear):
     SIMCHAT_TORAH_DIASPORA = 23
     SIMCHAT_TORAH = (SIMCHAT_TORAH_DIASPORA, SIMCHAT_TORAH_ISRAEL)
 
-    def __init__(self, year):
-        super(HebrewYear, self).__init__(year)
-
     def months(self):
         """A generator for the months of the current year."""
-        for month in xrange(HebrewMonth.start_year_month(),
-                            self.months_in_year() + 1):
+        for month in range(HebrewMonth.start_year_month(),
+                           self.months_in_year() + 1):
             yield HebrewMonth(month)
-        for month in xrange(1, HebrewMonth.end_year_month() + 1):
+        for month in range(1, HebrewMonth.end_year_month() + 1):
             yield HebrewMonth(month)
-
-    @classmethod
-    def start_first_year(cls):
-        return FIRST_MOLAD
 
     def months_in_year(self):
         """Return the number of months in a year.
@@ -642,8 +640,8 @@ class HebrewYear(RegularYear):
         except DateNotInRange:
             if month in (HebrewMonth.CHESHVAN, HebrewMonth.KISLEV,
                          HebrewMonth.ADAR_RISHON) and date == self.LONG_MONTH:
-                month = HebrewMonth.NISSAN if month == HebrewMonth.ADAR_RISHON \
-                    else month + 1
+                month = HebrewMonth.NISSAN \
+                    if month == HebrewMonth.ADAR_RISHON else month + 1
                 month, date = super(HebrewYear, self).adjust_date(month, 1)
             else:
                 raise
@@ -817,5 +815,4 @@ class HebrewYear(RegularYear):
         if (HebrewMonth.NISSAN, 15) < (month, date) < (HebrewMonth.SIVAN, 6):
             return ((self.day_start(month, date) -
                      self.day_start(HebrewMonth.NISSAN, 15)) // DAY)
-        else:
-            return None
+        return None

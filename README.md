@@ -3,30 +3,41 @@ Hebrew date calendar conversion
 
 hbcal is a command line utility to convert dates between the Hebrew calendar and the Civil calendar. It can also optionally display other information about the date e.g. the weekly portion of the Torah, the daily page of Talmud.
 
-## pre-requisites
-* python version 2.7 (python 3 version coming soon)
+## Pre-requisites
+* python version 2.7 or 3.4+ (3.3 might also work, but is not tested)
 * pip
 
-## installation
+## Installation
+
+### Easy way - use pip
+
+`pip install hbcal`
+### From Repository
+Clone the repository:
+```
+git clone https://github.com/markastern/hbcal
+```
 To install, run the installation program:
 
 * `python setup.py test` (optional)
 * `[sudo] python setup.py install`
 
-## running
+## Running
 For help type:
-
 `hbcal --help`
-
-## example
+## Example
 To convert 1st January 2016 to Hebrew calendar and display also the weekly portion of the Torah and the daily page of Talmud:
+
 ```
 $ hbcal --sedrah --input civil --output hebrew daf -- 1 1 2016
 יום שישי 20 טבת 5776
 גיטין 19
 שמות
-```
-## changes in version 0.8.0
+
+## Changes in version 0.8.0
 Structure reorganized. Makefile replaced with a python setup script.
+
+## Changes in version 0.9.0
+Now compatible with python version 3.4+. Python 3.3 might also work, but is not tested)
 
 By Mark Stern (markalexstern@gmail.com)

@@ -1,6 +1,6 @@
 """This module defines the RelTime and AbsTime classes"""
 
-# Copyright 2015 Mark Stern
+# Copyright 2015, 2019 Mark Stern
 #
 # This file is part of Hbcal.
 #
@@ -17,7 +17,7 @@
 # along with Hbcal.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import division
 import numbers
-from hebrew_letters import HEBREW_LETTERS
+from .hebrew_letters import HEBREW_LETTERS
 
 CHALAKIM_IN_HOUR = 1080
 HOURS_IN_DAY = 24
@@ -35,109 +35,102 @@ class RelTime(object):
                          HOURS_IN_DAY + hours) * CHALAKIM_IN_HOUR + chalakim
 
     def __add__(self, other):
-        if isinstance(other, RelTime):
-            return RelTime(0, 0, 0, self.chalakim + other.chalakim)
-        else:
+        if not isinstance(other, RelTime):
             return NotImplemented
+        return RelTime(0, 0, 0, self.chalakim + other.chalakim)
 
     def __sub__(self, other):
-        if isinstance(other, RelTime):
-            return RelTime(0, 0, 0, self.chalakim - other.chalakim)
-        else:
+        if not isinstance(other, RelTime):
             return NotImplemented
+        return RelTime(0, 0, 0, self.chalakim - other.chalakim)
 
     def __iadd__(self, other):
-        if isinstance(other, RelTime):
-            self.chalakim += other.chalakim
-            return self
-        else:
+        if not isinstance(other, RelTime):
             # Cannot return NotImplemented here because it would fall back to
             # using __add__, and then other.__radd__, which would return a
             # RelTime object if other is an AbstTime object.
             raise TypeError("unsupported operand type(s) for -= : " +
                             "'{0}' and '{1}'".format(self.__class__.__name__,
                                                      other.__class__.__name__))
+        self.chalakim += other.chalakim
+        return self
 
     def __isub__(self, other):
-        if isinstance(other, RelTime):
-            self.chalakim -= other.chalakim
-            return self
-        else:
+        if not isinstance(other, RelTime):
             return NotImplemented
 
+        self.chalakim -= other.chalakim
+        return self
+
     def __mul__(self, other):
-        if isinstance(other, int):
-            return RelTime(0, 0, 0, self.chalakim * other)
-        else:
+        if not isinstance(other, int):
             return NotImplemented
+
+        return RelTime(0, 0, 0, self.chalakim * other)
 
     def __rmul__(self, other):
         return self * other
 
     def __imul__(self, other):
-        if isinstance(other, int):
-            self.chalakim *= other
-            return self
-        else:
+        if not isinstance(other, int):
             return NotImplemented
+
+        self.chalakim *= other
+        return self
 
     def __truediv__(self, other):
         if isinstance(other, RelTime):
             return self.chalakim / other.chalakim
-        elif isinstance(other, numbers.Real):
+        if isinstance(other, numbers.Real):
             return RelTime(0, 0, 0, self.chalakim / other)
-        else:
-            return NotImplemented
+        return NotImplemented
 
     def __floordiv__(self, other):
         if isinstance(other, RelTime):
             return self.chalakim // other.chalakim
-        elif isinstance(other, numbers.Real):
+        if isinstance(other, numbers.Real):
             return RelTime(0, 0, 0, self.chalakim // other)
-        else:
-            return NotImplemented
+        return NotImplemented
 
     def __mod__(self, other):
         if isinstance(other, RelTime):
             return RelTime(0, 0, 0, self.chalakim % other.chalakim)
-        elif isinstance(other, numbers.Real):
+        if isinstance(other, numbers.Real):
             return RelTime(0, 0, 0, self.chalakim % other)
-        else:
-            return NotImplemented
+        return NotImplemented
 
     def __divmod__(self, other):
         if isinstance(other, RelTime):
             quotient, remainder = divmod(self.chalakim, other.chalakim)
             return quotient, RelTime(0, 0, 0, remainder)
-        elif isinstance(other, numbers.Real):
+        if isinstance(other, numbers.Real):
             quotient, remainder = divmod(self.chalakim, other)
             return RelTime(0, 0, 0, quotient), RelTime(0, 0, 0, remainder)
-        else:
-            return NotImplemented
+        return NotImplemented
 
     def __repr__(self):
         return "RelTime({0})".format(self.chalakim)
 
     def __format__(self, fmt):
         fmt1, _, option = fmt.partition('#')
-        if fmt1 == 'hmp':
-            minutes, chalakim = divmod(self.chalakim, CHALAKIM_IN_MINUTE)
-            hours, minutes = divmod(minutes, MINUTES_IN_HOUR)
-            hours = hours % HOURS_IN_DAY
-            result = "{0:0>2d}:{1:0>2d}".format(hours, minutes)
-            if option == "":
-                result += " and {} parts".format(chalakim)
-            elif option == "H":
-                result += u" {VAV}{0} {PARTS}".format(chalakim,
-                                                      PARTS=PARTS,
-                                                      **HEBREW_LETTERS)
-            elif option == "R":
-                result = u"{PARTS} {0}{VAV} ".format(chalakim,
-                                                     PARTS=PARTS[::-1],
-                                                     **HEBREW_LETTERS) + result
-            return result
-        else:
+        if fmt1 != 'hmp':
             return self.__repr__()
+
+        minutes, chalakim = divmod(self.chalakim, CHALAKIM_IN_MINUTE)
+        hours, minutes = divmod(minutes, MINUTES_IN_HOUR)
+        hours = hours % HOURS_IN_DAY
+        result = "{0:0>2d}:{1:0>2d}".format(hours, minutes)
+        if option == "":
+            result += " and {} parts".format(chalakim)
+        elif option == "H":
+            result += u" {VAV}{0} {PARTS}".format(chalakim,
+                                                  PARTS=PARTS,
+                                                  **HEBREW_LETTERS)
+        elif option == "R":
+            result = u"{PARTS} {0}{VAV} ".format(chalakim,
+                                                 PARTS=PARTS[::-1],
+                                                 **HEBREW_LETTERS) + result
+        return result
 
     @property
     def weeks(self):
@@ -154,6 +147,7 @@ class RelTime(object):
     def days_chalakim(self):
         """Returns a tuple comprising days and leftover chalakim."""
         return divmod(self.chalakim, HOURS_IN_DAY * CHALAKIM_IN_HOUR)
+
 
 DAY = RelTime(0, 1)
 
@@ -243,26 +237,26 @@ class AbsTime(object):
 
     def __format__(self, fmt):
         fmt1, _, option = fmt.partition('#')
-        if fmt1 == 'hmp':
-            result = "{0:0>2d}:{1:0>2d}".format(self._hours,
-                                                self._chalakim //
-                                                CHALAKIM_IN_MINUTE)
-            if option == "":
-                result += " and {} parts".format(self._chalakim %
-                                                 CHALAKIM_IN_MINUTE)
-            elif option == "H":
-                result += u" {VAV}{0} {PARTS}".format(self._chalakim %
-                                                      CHALAKIM_IN_MINUTE,
-                                                      PARTS=PARTS,
-                                                      **HEBREW_LETTERS)
-            elif option == "R":
-                result = u"{PARTS} {0}{VAV} ".format(self._chalakim %
-                                                     CHALAKIM_IN_MINUTE,
-                                                     PARTS=PARTS[::-1],
-                                                     **HEBREW_LETTERS) + result
-            return result
-        else:
+        if fmt1 != 'hmp':
             return self.__repr__()
+
+        result = "{0:0>2d}:{1:0>2d}".format(self._hours,
+                                            self._chalakim //
+                                            CHALAKIM_IN_MINUTE)
+        if option == "":
+            result += " and {} parts".format(self._chalakim %
+                                             CHALAKIM_IN_MINUTE)
+        elif option == "H":
+            result += u" {VAV}{0} {PARTS}".format(self._chalakim %
+                                                  CHALAKIM_IN_MINUTE,
+                                                  PARTS=PARTS,
+                                                  **HEBREW_LETTERS)
+        elif option == "R":
+            result = u"{PARTS} {0}{VAV} ".format(self._chalakim %
+                                                 CHALAKIM_IN_MINUTE,
+                                                 PARTS=PARTS[::-1],
+                                                 **HEBREW_LETTERS) + result
+        return result
 
     # Implement all the rich comparision operators.
     def __eq__(self, other):
@@ -318,13 +312,13 @@ class AbsTime(object):
             self._weeks -= 1
 
     def __add__(self, other):
-        if isinstance(other, RelTime):
-            return AbsTime(self._weeks,
-                           self._days,
-                           self._hours,
-                           self._chalakim + other.chalakim)
-        else:
+        if not isinstance(other, RelTime):
             return NotImplemented
+
+        return AbsTime(self._weeks,
+                       self._days,
+                       self._hours,
+                       self._chalakim + other.chalakim)
 
     def __radd__(self, other):
         return self + other
@@ -335,22 +329,22 @@ class AbsTime(object):
                            self._days - other.days,
                            self._hours - other.hours,
                            self._chalakim - other.chalakim)
-        elif isinstance(other, RelTime):
+        if isinstance(other, RelTime):
             return AbsTime(self._weeks,
                            self._days,
                            self._hours,
                            self._chalakim - other.chalakim)
-        else:
-            return NotImplemented
+
+        return NotImplemented
 
     def __mul__(self, other):
-        if isinstance(other, int):
-            return AbsTime(self._weeks * other,
-                           self._days * other,
-                           self._hours * other,
-                           self._chalakim * other)
-        else:
+        if not isinstance(other, int):
             return NotImplemented
+
+        return AbsTime(self._weeks * other,
+                       self._days * other,
+                       self._hours * other,
+                       self._chalakim * other)
 
     def __rmul__(self, other):
         return self * other

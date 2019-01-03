@@ -5,3 +5,7 @@ MANIFEST
 *.egg-info/
 .coverage
 home
+.eggs
+htmlcov
+tox.ini
+.tox

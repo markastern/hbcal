@@ -1,6 +1,6 @@
 """This file contains classes CivilMonth, CivilYear and subclasses."""
 
-# Copyright 2015, 2016 Mark Stern
+# Copyright 2015, 2016, 2019 Mark Stern
 #
 # This file is part of Hbcal.
 #
@@ -17,8 +17,8 @@
 # along with Hbcal.  If not, see <http://www.gnu.org/licenses/>.
 
 from abc import ABCMeta
-from abs_time import AbsTime, DAY
-from date import Month, Date, BadDate, RegularYear, Year
+from .abs_time import AbsTime, DAY
+from .date import Month, Date, BadDate, RegularYear, Year
 
 
 class CivilMonth(Month):
@@ -240,11 +240,7 @@ class BritishYear(CivilYear):
         return JulianYear if year_value <= cls.LAST_JULIAN_DATE.year.value \
             else GregorianYear
 
-    @property
-    def value(self):
-        return self._value
-
-    @value.setter
+    @Year.value.setter
     def value(self, value):
         old_class = self._base_year(self.value)
         new_class = self._base_year(value)

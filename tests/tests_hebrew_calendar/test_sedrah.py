@@ -16,10 +16,11 @@
 
 import unittest
 import logging
+import sys
 from hbcal.hebrew_calendar.date import MonthNotInRange
 
 from hbcal.hebrew_calendar.hebrew_year import HebrewYear, HebrewMonth, Sedrah
-logging.basicConfig(filename='/dev/stdout', level=logging.DEBUG)
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 
 class TestPesachSundayRegularIsrael(unittest.TestCase):

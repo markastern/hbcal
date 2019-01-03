@@ -3,7 +3,7 @@
 This module contains tests for the '--omer' and '--noomer' command line
 options and for the 'omer' configuration file option.
 """
-# Copyright 2015, 2016 Mark Stern
+# Copyright 2015, 2016, 2019 Mark Stern
 #
 # This file is part of Hbcal.
 #
@@ -21,16 +21,19 @@ options and for the 'omer' configuration file option.
 
 import unittest
 import logging
-from configuration_utilities import ConfigurationParameterAmbiguousError, \
-    ConfigurationParameterValueError
-from utilities import ConfigurationData, TestCase, hbcal
+import sys
+
+from hbcal.configuration_utilities import (
+        ConfigurationParameterAmbiguousError,
+        ConfigurationParameterValueError)
+from .utilities import ConfigurationData, TestCase, hbcal
 
 # Test discovery uses setUpModule, but pylint does not know that.
 # pylint: disable=unused-import
-from utilities import set_up_module as setUpModule  # noqa
+from .utilities import set_up_module as setUpModule  # noqa
 # pylint: enable=unused-import
 
-logging.basicConfig(filename='/dev/stdout', level=logging.DEBUG)
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 
 class TestNoConfigFile(TestCase):
@@ -132,6 +135,7 @@ class InvalidValue(TestCase):
         """Test default value of --[no]omer option."""
         with self.assertRaises(ConfigurationParameterValueError):
             hbcal("hbcal -ih -o -fphonetics 1 2 5775")
+
 
 if __name__ == "__main__":
     unittest.main()

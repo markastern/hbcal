@@ -16,12 +16,13 @@
 
 import unittest
 import logging
+import sys
 
 from hbcal.hebrew_calendar import date
 from hbcal.hebrew_calendar.civil_year import CivilMonth, GregorianYear
 from hbcal.hebrew_calendar.abs_time import AbsTime
 
-logging.basicConfig(filename='/dev/stdout', level=logging.DEBUG)
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 
 class TestYearStart(unittest.TestCase):
@@ -246,7 +247,7 @@ class TestCurrentDate(unittest.TestCase):
             @classmethod
             def estimate_current_year(cls, atime):
                 return int((atime.weeks * 7 + atime.days) / 300 + 0.5) +\
-                    cls.first_year()
+                    cls.FIRST_YEAR
 
         self.assertEqual(date.Date(GregorianLowDays(2000),
                                    CivilMonth.JANUARY, 1),
@@ -258,7 +259,7 @@ class TestCurrentDate(unittest.TestCase):
             @classmethod
             def estimate_current_year(cls, atime):
                 return int((atime.weeks * 7 + atime.days) / 400 + 0.5) +\
-                    cls.first_year()
+                    cls.FIRST_YEAR
 
         self.assertEqual(date.Date(GregorianHighDays(2000),
                                    CivilMonth.JANUARY, 1),
