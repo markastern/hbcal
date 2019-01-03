@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 """ Setup script based on setuptools
 
-    See https://pythonhosted.org/setuptools/setuptools.html for
-    more information.
+    See https://docs.python.org/3/distutils/setupscript.html
+    for more information.
 """
 
 # Copyright 2016, 2019 Mark Stern
@@ -94,6 +94,7 @@ if __name__ == "__main__":
                                               "tests.*", "tests"]),
               package_data={'hbcal': ['templates/*']},
               py_modules=['configuration_utilities'],
+              python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*',
               entry_points={'console_scripts': ['hbcal = hbcal.main:main']},
               install_requires=install_requires(),
               tests_require=['freezegun'],
