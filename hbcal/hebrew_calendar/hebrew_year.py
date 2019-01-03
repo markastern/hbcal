@@ -538,6 +538,8 @@ class HebrewYear(RegularYear):
     # The year of the first molad
     FIRST_YEAR = 2
 
+    START_FIRST_YEAR = FIRST_MOLAD
+
     # GaTRaD and BTUTKPaT are explained in start_year below.
     # GaTRaD : Gimmel = Day 3 (Tuesday), Tet = 9 (Hours),
     # Reish Dalet = 204 chalakim
@@ -561,10 +563,6 @@ class HebrewYear(RegularYear):
             yield HebrewMonth(month)
         for month in range(1, HebrewMonth.end_year_month() + 1):
             yield HebrewMonth(month)
-
-    @classmethod
-    def start_first_year(cls):
-        return FIRST_MOLAD
 
     def months_in_year(self):
         """Return the number of months in a year.

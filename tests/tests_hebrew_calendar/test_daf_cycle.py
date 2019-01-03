@@ -550,32 +550,6 @@ class TestCurrentDate(unittest.TestCase):
                                    Tractate.BERACHOS, 2),
                          date.Date(DafYomiCycle, AbsTime(301501, 0, 6, 0)))
 
-    # Check that we still get the right answers even if we use a ridiculously
-    # low (or high) heuristic for the number of weeks in a year.
-    def test_first_day_recent_year_low_heuristic(self):
-
-        class DafYomiLowDays(DafYomiCycle):
-            @classmethod
-            def estimate_current_year(cls, atime):
-                return int(((atime - cls.start_first_year()).days) /
-                           1500 + 0.5) + cls.first_year()
-
-        self.assertEqual(date.Date(DafYomiLowDays(14),
-                                   Tractate.BERACHOS, 2),
-                         date.Date(DafYomiLowDays, AbsTime(301501, 0, 6, 0)))
-
-    def test_first_day_recent_year_high_heuristic(self):
-
-        class DafYomiHighDays(DafYomiCycle):
-            @classmethod
-            def estimate_current_year(cls, atime):
-                return int(((atime - cls.start_first_year()).days)
-                           / 4000 + 0.5) + cls.first_year()
-
-        self.assertEqual(date.Date(DafYomiHighDays(14),
-                                   Tractate.BERACHOS, 2),
-                         date.Date(DafYomiHighDays, AbsTime(301501, 0, 6, 0)))
-
 
 class TestDayStart(unittest.TestCase):
 

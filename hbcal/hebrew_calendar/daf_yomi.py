@@ -194,13 +194,8 @@ class DafYomiCycle(Year):
     START_SHEKALIM_CHANGE_YEAR = START_FIRST_YEAR + \
         (SHEKALIM_CHANGE - FIRST_YEAR) * CYCLE_DAYS_ORIGINAL * DAY
 
-    @property
-    def value(self):
-        return self._value
-
-    @value.setter
+    @Year.value.setter
     def value(self, value):
-        super(DafYomiCycle, self.__class__).value.fset(self, value)
         difference = value - self._value
         if difference >= 0:
             while self._value < value:
@@ -270,7 +265,7 @@ class DafYomiCycle(Year):
 
         We only need to do it once per class."""
         if cls.MIN_DATE is None:
-            cls.MIN_DATE = Date(cls, cls.start_first_year())
+            cls.MIN_DATE = Date(cls, cls.START_FIRST_YEAR)
         return cls.MIN_DATE
 
     def format_date(self, tractate, page, fmt):

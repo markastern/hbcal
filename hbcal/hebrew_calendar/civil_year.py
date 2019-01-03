@@ -240,11 +240,7 @@ class BritishYear(CivilYear):
         return JulianYear if year_value <= cls.LAST_JULIAN_DATE.year.value \
             else GregorianYear
 
-    @property
-    def value(self):
-        return self._value
-
-    @value.setter
+    @Year.value.setter
     def value(self, value):
         old_class = self._base_year(self.value)
         new_class = self._base_year(value)

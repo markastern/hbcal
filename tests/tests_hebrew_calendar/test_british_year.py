@@ -19,8 +19,7 @@ import logging
 import sys
 
 from hbcal.hebrew_calendar import date
-from hbcal.hebrew_calendar.civil_year import CivilMonth, BritishYear, \
-    GregorianYear
+from hbcal.hebrew_calendar.civil_year import CivilMonth, BritishYear
 from hbcal.hebrew_calendar.abs_time import AbsTime
 
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
@@ -387,38 +386,6 @@ class TestCurrentDate(unittest.TestCase):
                                    CivilMonth.JANUARY, 1),
                          date.Date(BritishYear, AbsTime(300456, 6, 6, 0)))
 
-    # Check that we still get the right answers even if we use a ridiculously
-    # low (or high) heuristic for the number of weeks in a year.
-    def test_first_day_recent_year_low_heuristic(self):
-
-        class GregorianLowDays(GregorianYear):
-            @classmethod
-            def estimate_current_year(cls, atime):
-                return int((atime.weeks * 7 + atime.days) / 300 + 0.5) +\
-                    cls.first_year()
-
-        class BritishLowDays(BritishYear):
-            GREGORIANCLASS = GregorianLowDays
-
-        self.assertEqual(date.Date(BritishLowDays(2000),
-                                   CivilMonth.JANUARY, 1),
-                         date.Date(BritishLowDays, AbsTime(300456, 6, 6, 0)))
-
-    def test_first_day_recent_year_high_heuristic(self):
-
-        class GregorianHighDays(GregorianYear):
-            @classmethod
-            def estimate_current_year(cls, atime):
-                return int((atime.weeks * 7 + atime.days) / 400 + 0.5) +\
-                    cls.first_year()
-
-        class BritishHighDays(BritishYear):
-            GREGORIANCLASS = GregorianHighDays
-
-        self.assertEqual(date.Date(BritishHighDays(2000),
-                                   CivilMonth.JANUARY, 1),
-                         date.Date(BritishHighDays, AbsTime(300456, 6, 6, 0)))
-
 
 class TestDayStart(unittest.TestCase):
     def test_start_of_first_year(self):
@@ -547,25 +514,25 @@ class TestSubtractDays(unittest.TestCase):
         test_date = date.Date(BritishYear(1750), CivilMonth.DECEMBER, 31)
         test_date -= 364
         self.assertEqual(date.Date(BritishYear(1750),
-                         CivilMonth.JANUARY, 1), test_date)
+                                   CivilMonth.JANUARY, 1), test_date)
 
     def test_previous_year_before_1752(self):
         test_date = date.Date(BritishYear(1751), CivilMonth.JANUARY, 1)
         test_date -= 365
         self.assertEqual(date.Date(BritishYear(1750),
-                         CivilMonth.JANUARY, 1), test_date)
+                                   CivilMonth.JANUARY, 1), test_date)
 
     def test_previous_year_from_early_1752(self):
         test_date = date.Date(BritishYear(1752), CivilMonth.JANUARY, 1)
         test_date -= 365
         self.assertEqual(date.Date(BritishYear(1751),
-                         CivilMonth.JANUARY, 1), test_date)
+                                   CivilMonth.JANUARY, 1), test_date)
 
     def test_previous_year_from_late_1752(self):
         test_date = date.Date(BritishYear(1752), CivilMonth.SEPTEMBER, 14)
         test_date -= 611
         self.assertEqual(date.Date(BritishYear(1751),
-                         CivilMonth.JANUARY, 1), test_date)
+                                   CivilMonth.JANUARY, 1), test_date)
 
     def test_same_year_early_1752(self):
         test_date = date.Date(BritishYear(1752), CivilMonth.MARCH, 1)
@@ -577,7 +544,7 @@ class TestSubtractDays(unittest.TestCase):
         test_date = date.Date(BritishYear(1752), CivilMonth.SEPTEMBER, 14)
         test_date -= 246
         self.assertEqual(date.Date(BritishYear(1752),
-                         CivilMonth.JANUARY, 1), test_date)
+                                   CivilMonth.JANUARY, 1), test_date)
 
 
 if __name__ == '__main__':

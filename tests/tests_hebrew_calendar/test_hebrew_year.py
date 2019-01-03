@@ -402,7 +402,7 @@ class TestCurrentDate(unittest.TestCase):
             @classmethod
             def estimate_current_year(cls, atime):
                 return int((atime.weeks * 7 + atime.days) / 100 + 0.5) +\
-                    cls.first_year()
+                    cls.FIRST_YEAR
 
         self.assertEqual(date.Date(HebrewYearLowWeeks(5775),
                                    HebrewMonth.TISHRI, 1),
@@ -415,7 +415,7 @@ class TestCurrentDate(unittest.TestCase):
             @classmethod
             def estimate_current_year(cls, atime):
                 return int((atime.weeks * 7 + atime.days) / 1000 + 0.5) +\
-                    cls.first_year()
+                    cls.FIRST_YEAR
 
         self.assertEqual(date.Date(HebrewYearHighWeeks(5775),
                                    HebrewMonth.TISHRI, 1),
