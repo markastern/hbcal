@@ -6,7 +6,7 @@
    Gregorian from 14th September 1752 - the days in between did not exist),
    and Hebrew."""
 
-# Copyright 2015, 2016 Mark Stern
+# Copyright 2015, 2016, 2019 Mark Stern
 #
 # This file is part of Hbcal.
 #

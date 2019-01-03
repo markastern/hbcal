@@ -3,7 +3,7 @@
 This module contains tests for storing and retrieving a date according to
 different calendars from a cache.
 """
-# Copyright 2015 Mark Stern
+# Copyright 2015, 2019 Mark Stern
 #
 # This file is part of Hbcal.
 #

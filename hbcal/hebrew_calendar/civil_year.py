@@ -1,6 +1,6 @@
 """This file contains classes CivilMonth, CivilYear and subclasses."""
 
-# Copyright 2015, 2016 Mark Stern
+# Copyright 2015, 2016, 2019 Mark Stern
 #
 # This file is part of Hbcal.
 #

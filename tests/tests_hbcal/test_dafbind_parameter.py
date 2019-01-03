@@ -3,7 +3,7 @@
 This module contains tests for the '--dafbind' and --nodafbind command line
 options and for the 'dafbind' configuration file option.
 """
-# Copyright 2015, 2016 Mark Stern
+# Copyright 2015, 2016, 2019 Mark Stern
 #
 # This file is part of Hbcal.
 #

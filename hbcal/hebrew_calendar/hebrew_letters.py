@@ -5,7 +5,7 @@ Exports:
     HebrewString
 """
 
-# Copyright 2015 Mark Stern
+# Copyright 2015, 2019 Mark Stern
 #
 # This file is part of Hbcal.
 #

@@ -5,7 +5,7 @@
     more information.
 """
 
-# Copyright 2016 Mark Stern
+# Copyright 2016, 2019 Mark Stern
 #
 # This file is part of Hbcal.
 #

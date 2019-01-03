@@ -1,6 +1,6 @@
 """Test for converting date based on all or part of the current date."""
 
-# Copyright 2015 Mark Stern
+# Copyright 2015, 2019 Mark Stern
 #
 # This file is part of Hbcal.
 #
