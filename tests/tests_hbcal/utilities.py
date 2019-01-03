@@ -22,6 +22,7 @@ Exports:
 # You should have received a copy of the GNU General Public License
 # along with Hbcal.  If not, see <http://www.gnu.org/licenses/>.
 
+from past.builtins import basestring
 import os.path
 import unittest
 from enum import Enum

@@ -16,12 +16,13 @@
 
 import unittest
 import logging
+import sys
 
 from hbcal.hebrew_calendar import date
 from hbcal.hebrew_calendar.hebrew_year import HebrewYear, HebrewMonth
 from hbcal.hebrew_calendar.abs_time import AbsTime
 
-logging.basicConfig(filename='/dev/stdout', level=logging.DEBUG)
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 
 class TestMolad(unittest.TestCase):
@@ -401,7 +402,7 @@ class TestCurrentDate(unittest.TestCase):
             @classmethod
             def estimate_current_year(cls, atime):
                 return int((atime.weeks * 7 + atime.days) / 100 + 0.5) +\
-                    cls.first_year()
+                    cls.FIRST_YEAR
 
         self.assertEqual(date.Date(HebrewYearLowWeeks(5775),
                                    HebrewMonth.TISHRI, 1),
@@ -414,7 +415,7 @@ class TestCurrentDate(unittest.TestCase):
             @classmethod
             def estimate_current_year(cls, atime):
                 return int((atime.weeks * 7 + atime.days) / 1000 + 0.5) +\
-                    cls.first_year()
+                    cls.FIRST_YEAR
 
         self.assertEqual(date.Date(HebrewYearHighWeeks(5775),
                                    HebrewMonth.TISHRI, 1),

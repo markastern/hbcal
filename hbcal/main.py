@@ -6,7 +6,7 @@
    Gregorian from 14th September 1752 - the days in between did not exist),
    and Hebrew."""
 
-# Copyright 2015, 2016 Mark Stern
+# Copyright 2015, 2016, 2019 Mark Stern
 #
 # This file is part of Hbcal.
 #
@@ -28,22 +28,30 @@ import logging.config
 import sys
 from argparse import RawDescriptionHelpFormatter
 from datetime import datetime, timedelta
-from ConfigParser import RawConfigParser
+try:
+    from configparser import RawConfigParser
+except ImportError:
+    from ConfigParser import RawConfigParser
 import os.path as path
-from configuration_utilities import SingleConfigurationParameter, \
-    MultiConfigurationParameter, BinaryConfigurationParameter, \
-    DuplicateError, StoreRestrictiveList, add_negatable_option, \
-    ArgumentParserWriteUTF8 as ArgumentParser
-from hebrew_calendar.date import Date, DateTime
-from hebrew_calendar.daf_yomi import DafYomiCycle, DateBeforeDafYomi, \
-    SubTractate
-from hebrew_calendar.weekday import Weekday, YOM
-from hebrew_calendar.civil_year import GregorianYear, JulianYear, BritishYear
-from hebrew_calendar.hebrew_year import HebrewYear
-from hebrew_calendar.hebrew_letters import HebrewString
-from hebrew_calendar.abs_time import AbsTime
-from ordinal import ordinal_suffix
-from version import __version__
+from future.builtins import dict
+from hbcal.configuration_utilities import (SingleConfigurationParameter,
+                                           MultiConfigurationParameter,
+                                           BinaryConfigurationParameter,
+                                           DuplicateError,
+                                           StoreRestrictiveList,
+                                           add_negatable_option,
+                                           ArgumentParser)
+from hbcal.hebrew_calendar.date import Date, DateTime
+from hbcal.hebrew_calendar.daf_yomi import (DafYomiCycle, DateBeforeDafYomi,
+                                            SubTractate)
+from hbcal.hebrew_calendar.weekday import Weekday, YOM
+from hbcal.hebrew_calendar.civil_year import (GregorianYear, JulianYear,
+                                              BritishYear)
+from hbcal.hebrew_calendar.hebrew_year import HebrewYear
+from hbcal.hebrew_calendar.hebrew_letters import HebrewString
+from hbcal.hebrew_calendar.abs_time import AbsTime
+from hbcal.ordinal import ordinal_suffix
+from hbcal.version import __version__
 
 CALENDAR_TYPES = {"civil": BritishYear, "gregorian": GregorianYear,
                   "hebrew": HebrewYear, "julian": JulianYear,
@@ -84,26 +92,26 @@ def get_config():
     Returns the parameters in dictionary format"""
 
     section = "hbcal"
-    parameters = {
-        'input calendar': SingleConfigurationParameter(CALENDAR_TYPES,
-                                                       'civil'),
-        'dafbind': SingleConfigurationParameter(DAFBIND_TYPES, 'civil'),
-        'format': SingleConfigurationParameter(FORMAT_TYPES, 'normal'),
-        'output calendar':
-            MultiConfigurationParameter(CALENDAR_TYPES,
-                                        ['civil', 'hebrew'],
-                                        (("julian", "gregorian", "civil"),)),
-        'sedrah': BinaryConfigurationParameter(),
-        'omer': BinaryConfigurationParameter(),
-        'molad': BinaryConfigurationParameter(),
-        'israel': BinaryConfigurationParameter(),
-    }
+    parameters = dict([
+        ('input calendar', SingleConfigurationParameter(CALENDAR_TYPES,
+                                                        'civil')),
+        ('dafbind', SingleConfigurationParameter(DAFBIND_TYPES, 'civil')),
+        ('format', SingleConfigurationParameter(FORMAT_TYPES, 'normal')),
+        ('output calendar', MultiConfigurationParameter(CALENDAR_TYPES,
+                                                        ['civil', 'hebrew'],
+                                                        (("julian",
+                                                          "gregorian",
+                                                          "civil"),))),
+        ('sedrah', BinaryConfigurationParameter()),
+        ('omer', BinaryConfigurationParameter()),
+        ('molad', BinaryConfigurationParameter()),
+        ('israel', BinaryConfigurationParameter())])
 
     config = RawConfigParser()
     home = path.expanduser("~")
     filename = path.join(home, '.hbcal.config')
     if config.read(filename):
-        for key, value in parameters.viewitems():
+        for key, value in parameters.items():
             value.parameter_found(key, section, config)
     if config.has_section('loggers'):
         logging.config.fileConfig(filename, disable_existing_loggers=True)
@@ -237,11 +245,9 @@ class DateCache(object):
     def __getitem__(self, item):
         if item in self.dates:
             return self.dates[item]
-        else:
-            new_date = Date(item, self.atime)
-            # Store it for future use
-            self.dates[item] = new_date
-            return new_date
+        new_date = Date(item, self.atime)  # Store it for future use
+        self.dates[item] = new_date
+        return new_date
 
 
 def input_date(args, input_class):
@@ -337,6 +343,14 @@ def get_output_line(argv):
 
 
 def main(argv=None):
+    """ Main code for application.
+
+    Outputs required information a line at a time
+
+    Args:
+        argv: command line parameters
+
+    """
     if argv is None:
         argv = sys.argv
     for output_line in get_output_line(argv):

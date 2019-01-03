@@ -1,6 +1,6 @@
 """This module defines calendar classes (mostly abstract) for hbcal"""
 
-# Copyright 2015, 2016 Mark Stern
+# Copyright 2015, 2016, 2019 Mark Stern
 #
 # This file is part of Hbcal.
 #
@@ -17,12 +17,15 @@
 # along with Hbcal.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import division
-from abc import ABCMeta, abstractmethod, abstractproperty
+from abc import ABCMeta, abstractmethod
+from enum import IntEnum
 import logging
 
-from enum import IntEnum
+from future.builtins import range
+from future.utils import PY2, with_metaclass
 
-from abs_time import RelTime, AbsTime, DAY
+from .abs_time import RelTime, AbsTime, DAY
+from .abstract_attribute import AbstractAttribute
 
 # Exception Classes
 
@@ -55,16 +58,20 @@ class Month(IntEnum):
         return self._name_.replace('_', ' ').title()
 
     @staticmethod
+    @abstractmethod
     def start_year_month():
         """Return the month at the start of which the year changes.
 
         For Hebrew years, this is not 1."""
-        raise NotImplementedError
+        if PY2:
+            raise NotImplementedError
 
     @staticmethod
+    @abstractmethod
     def end_year_month():
         """Return the month after which the year changes."""
-        raise NotImplementedError
+        if PY2:
+            raise NotImplementedError
 
     def __format__(self, fmt):
         return str(self)
@@ -96,12 +103,11 @@ class Date(object):
             self.month = year.month_class()(month)
 
     def __eq__(self, other):
-        if isinstance(other, Date):
-            return (self.year, self.month, self.date) == (other.year,
-                                                          other.month,
-                                                          other.date)
-        else:
+        if not isinstance(other, Date):
             return NotImplemented
+        return (self.year, self.month, self.date) == (other.year,
+                                                      other.month,
+                                                      other.date)
 
     def __ne__(self, other):
         return not self == other
@@ -155,18 +161,17 @@ class Date(object):
 LOG = logging.getLogger(__name__)
 
 
-class Year(object):
+class Year(with_metaclass(ABCMeta, object)):
     """Abstract base class for defining the year of different calendar types"""
-    __metaclass__ = ABCMeta
 
     MIN_DATE = None
-    FIRST_YEAR = None
-    START_FIRST_YEAR = None
+    FIRST_YEAR = AbstractAttribute("The value of the first year")
+    START_FIRST_YEAR = AbstractAttribute("The start of the first year")
 
     def __init__(self, year):
         if isinstance(year, int):
-            self._value = self.first_year()
-            self._start = self.start_first_year()
+            self._value = self.FIRST_YEAR
+            self._start = self.START_FIRST_YEAR
             self.value = year
         elif isinstance(year, self.__class__):
             # pylint: disable=protected-access
@@ -177,19 +182,20 @@ class Year(object):
                             "{0}(): '{1}'".format(self.__class__.__name__,
                                                   year.__class__.__name__))
 
-    @abstractproperty
+    @property
     def value(self):
         """Return the year value (integer)."""
         return self._value
 
     @value.setter
+    @abstractmethod
     def value(self, value):
         """Set year value.
 
         :param value: The year value (int)
         :return: None
         """
-        pass
+        raise NotImplementedError
 
     @property
     def start(self):
@@ -229,8 +235,8 @@ class Year(object):
 
     def months(self):
         """A generator for the months of the current year."""
-        for month in xrange(self.month_class().start_year_month(),
-                            self.months_in_year() + 1):
+        for month in range(self.month_class().start_year_month(),
+                           self.months_in_year() + 1):
             yield self.month_class()(month)
 
     @abstractmethod
@@ -281,18 +287,16 @@ class Year(object):
         return self
 
     def __add__(self, other):
-        if isinstance(other, int):
-            new_year = self.__class__(self)
-            return new_year.__iadd__(other)
-        else:
+        if not isinstance(other, int):
             return NotImplemented
+        new_year = self.__class__(self)
+        return new_year.__iadd__(other)
 
     def __sub__(self, other):
-        if isinstance(other, int):
-            new_year = self.__class__(self)
-            return new_year.__isub__(other)
-        else:
+        if not isinstance(other, int):
             return NotImplemented
+        new_year = self.__class__(self)
+        return new_year.__isub__(other)
 
     def add_days(self, month, date, days):
         """ Adds the specified number of days to a date in the current year.
@@ -320,16 +324,6 @@ class Year(object):
                 month = cls(month - 1 if month > 1 else self.months_in_year())
                 date += self.days_in_month(month)
         return (self, month, date)
-
-    @classmethod
-    def first_year(cls):
-        """Return the first full year."""
-        return cls.FIRST_YEAR
-
-    @classmethod
-    def start_first_year(cls):
-        """Return the start (abs_time) of the first day of the first year."""
-        return cls.START_FIRST_YEAR
 
     @classmethod
     def current_year(cls, atime):
@@ -415,14 +409,10 @@ class RegularYear(Year):
 
         The calling function must allow for the possibility that it is not
         exactly correct."""
-        return ((atime - cls.start_first_year()) * cls._years_per_cycle() //
-                cls._cycle_duration()) + cls.first_year()
+        return ((atime - cls.START_FIRST_YEAR) * cls._years_per_cycle() //
+                cls._cycle_duration()) + cls.FIRST_YEAR
 
-    @property
-    def value(self):
-        return self._value
-
-    @value.setter
+    @Year.value.setter
     def value(self, value):
         difference = value - self._value
         cycles = (difference + self._years_per_cycle() // 2) // \

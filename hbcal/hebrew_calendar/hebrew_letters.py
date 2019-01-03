@@ -5,7 +5,7 @@ Exports:
     HebrewString
 """
 
-# Copyright 2015 Mark Stern
+# Copyright 2015, 2019 Mark Stern
 #
 # This file is part of Hbcal.
 #
@@ -21,6 +21,8 @@ Exports:
 # You should have received a copy of the GNU General Public License
 # along with Hbcal.  If not, see <http://www.gnu.org/licenses/>.
 
+from future.utils import PY2
+
 HEBREW_LETTERS = {'ALEF': u"\u05D0", 'BET': u"\u05D1", 'GIMEL': u"\u05D2",
                   'DALET': u"\u05D3", 'HE': u"\u05D4", 'VAV': u"\u05D5",
                   'ZAYIN': u"\u05D6", 'CHET': u"\u05D7", 'TET': u"\u05D8",
@@ -34,7 +36,7 @@ HEBREW_LETTERS = {'ALEF': u"\u05D0", 'BET': u"\u05D1", 'GIMEL': u"\u05D2",
                   'TAV': u"\u05EA", 'GERESH': u"\u05F3"}
 
 
-class HebrewString(unicode):
+class HebrewString(unicode if PY2 else str):
     """ A class for formatting Hebrew strings in different ways."""
 
     def __format__(self, fmt):
@@ -52,12 +54,13 @@ class HebrewString(unicode):
                 for use in web scripts.
         :return: The formatted string.
         """
+        hebrew_format = self.format(**HEBREW_LETTERS)
         if fmt == "#H":
-            return self.format(**HEBREW_LETTERS)
+            return hebrew_format
         elif fmt == "#R":
-            return self.format(**HEBREW_LETTERS)[::-1]
+            return hebrew_format[::-1]
         elif fmt == "#h":
-            return self.format(**HEBREW_LETTERS).encode('ascii',
-                                                        'xmlcharrefreplace')
+            return hebrew_format.encode('ascii',
+                                        'xmlcharrefreplace').decode('ascii')
         else:
             raise NotImplementedError

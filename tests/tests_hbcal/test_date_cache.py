@@ -3,7 +3,7 @@
 This module contains tests for storing and retrieving a date according to
 different calendars from a cache.
 """
-# Copyright 2015 Mark Stern
+# Copyright 2015, 2019 Mark Stern
 #
 # This file is part of Hbcal.
 #
@@ -51,6 +51,7 @@ class TestDateCache(unittest.TestCase):
         self.assertEqual((Date(GregorianYear(2015),
                                CivilMonth.SEPTEMBER, 14)),
                          self.date_cache[GregorianYear])
+
 
 if __name__ == "__main__":
     unittest.main()

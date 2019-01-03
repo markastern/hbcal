@@ -16,10 +16,11 @@
 
 import unittest
 import logging
+import sys
 from hbcal.hebrew_calendar.date import DateNotInRange
 
 from hbcal.hebrew_calendar.hebrew_year import HebrewYear, HebrewMonth
-logging.basicConfig(filename='/dev/stdout', level=logging.DEBUG)
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 
 class TestOmer(unittest.TestCase):
