@@ -7,3 +7,5 @@ MANIFEST
 home
 .eggs
 htmlcov
+tox.ini
+.tox
