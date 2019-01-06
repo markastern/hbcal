@@ -15,6 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Hbcal.  If not, see <http://www.gnu.org/licenses/>.
+from __future__ import absolute_import
 try:
     from configparser import NoSectionError, NoOptionError
 except ImportError:
@@ -23,7 +24,8 @@ except ImportError:
 from abc import ABCMeta, abstractmethod
 import argparse
 import sys as _sys
-from future.utils import PY2
+from future.utils import PY2, with_metaclass
+from future.builtins import super
 
 
 class ConfigurationParameterException(Exception):
@@ -111,7 +113,7 @@ class RestrictiveList(list):
     """
 
     def __init__(self, allowed, mutex_groups=None):
-        super(RestrictiveList, self).__init__()
+        super().__init__()
         self.allowed = allowed
         self.mutex_groups = {}
         for group in mutex_groups if mutex_groups else []:
@@ -133,7 +135,7 @@ class RestrictiveList(list):
                 holder.append(key)
             elif holder[0] != key:
                 raise DuplicateError
-        super(RestrictiveList, self).append(key)
+        super().append(key)
 
     def __delslice__(self, start, stop):
         """Only needed in python 2."""
@@ -145,10 +147,10 @@ class RestrictiveList(list):
             if element in self.mutex_groups:
                 holder = self.mutex_groups[element]
                 del holder[0]
-        super(RestrictiveList, self).__delitem__(key)
+        super().__delitem__(key)
 
 
-class ConfigurationParameter(object):
+class ConfigurationParameter(with_metaclass(ABCMeta, object)):
     """ Abstract base class for parameters in configuration file.
 
     The values must be from a predefined list. They may be abbreviated.
@@ -158,7 +160,6 @@ class ConfigurationParameter(object):
                It should be set to the string found in the configuration
                file.
     """
-    __metaclass__ = ABCMeta
 
     @abstractmethod
     def _get_value(self):
@@ -212,7 +213,7 @@ class SingleConfigurationParameter(ConfigurationParameter):
     """
 
     def __init__(self, allowed, default):
-        super(SingleConfigurationParameter, self).__init__()
+        super().__init__()
         self._allowed = AbbrevList(allowed)
         try:
             self._value = self._allowed[default]
@@ -238,7 +239,7 @@ class BinaryConfigurationParameter(ConfigurationParameter):
     """
     def __init__(self):
         self._value = False
-        super(BinaryConfigurationParameter, self).__init__()
+        super().__init__()
         self._allowed = AbbrevList(("true", "yes", "false", "no"))
 
     def _get_value(self):
@@ -254,7 +255,7 @@ class MultiConfigurationParameter(ConfigurationParameter):
     """
 
     def __init__(self, allowed, default, mutex_groups=None):
-        super(MultiConfigurationParameter, self).__init__()
+        super().__init__()
         self._value = RestrictiveList(AbbrevList(allowed), mutex_groups)
         for item in default:
             self._value.append(item)
@@ -294,9 +295,8 @@ class StoreRestrictiveList(argparse.Action):
         """
         self.allowed = AbbrevList(choices)
         self.mutex_groups = mutex_groups
-        super(StoreRestrictiveList,
-              self).__init__(option_strings=option_strings,
-                             choices=self.allowed, *args, **kwargs)
+        super().__init__(option_strings=option_strings,
+                         choices=self.allowed, *args, **kwargs)
         self.restrictive_list = None
 
     def __call__(self, parser, namespace, values, option_string=None):

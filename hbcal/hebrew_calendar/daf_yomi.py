@@ -17,6 +17,8 @@
 # along with Hbcal.  If not, see <http://www.gnu.org/licenses/>.
 from enum import Enum
 
+from future.builtins import super
+
 from .abs_time import AbsTime, DAY
 from .hebrew_letters import HebrewString
 from .date import Month, Year, Date, DateBeforeCreation, BadDate
@@ -239,7 +241,7 @@ class DafYomiCycle(Year):
 
     def adjust_date(self, month, date):
         try:
-            return super(DafYomiCycle, self).adjust_date(month, date)
+            return super().adjust_date(month, date)
         except DateBeforeCreation:
             raise DateBeforeDafYomi
 

@@ -27,7 +27,7 @@
 from __future__ import division
 from enum import IntEnum
 
-from future.builtins import range
+from future.builtins import range, super
 
 from . import abs_time
 from .abs_time import DAY
@@ -628,13 +628,12 @@ class HebrewYear(RegularYear):
         If the month and date are still invalid, an exception is thrown."""
 
         try:
-            month, date = super(HebrewYear, self).adjust_date(month, date)
+            month, date = super().adjust_date(month, date)
         except MonthNotInRange:
             if month == HebrewMonth.ADAR_SHENI:
                 # Substitute Adar Rishon in a non-leap year
-                month, date = super(HebrewYear,
-                                    self).adjust_date(HebrewMonth.ADAR_RISHON,
-                                                      date)
+                month, date = super().adjust_date(HebrewMonth.ADAR_RISHON,
+                                                  date)
             else:
                 raise
         except DateNotInRange:
@@ -642,7 +641,7 @@ class HebrewYear(RegularYear):
                          HebrewMonth.ADAR_RISHON) and date == self.LONG_MONTH:
                 month = HebrewMonth.NISSAN \
                     if month == HebrewMonth.ADAR_RISHON else month + 1
-                month, date = super(HebrewYear, self).adjust_date(month, 1)
+                month, date = super().adjust_date(month, 1)
             else:
                 raise
         return month, date

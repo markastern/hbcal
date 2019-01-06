@@ -17,6 +17,9 @@
 # along with Hbcal.  If not, see <http://www.gnu.org/licenses/>.
 
 from abc import ABCMeta
+
+from future.builtins import super
+
 from .abs_time import AbsTime, DAY
 from .date import Month, Date, BadDate, RegularYear, Year
 
@@ -115,7 +118,7 @@ class JulianYear(CivilYear, RegularYear):
             self._value = year.value
             self._start = year.start
         else:
-            super(JulianYear, self).__init__(year)
+            super().__init__(year)
 
     @classmethod
     def leap_year(cls, year_value):
@@ -155,7 +158,7 @@ class GregorianYear(CivilYear, RegularYear):
             if year.value == year.__class__.FIRST_GREGORIAN_DATE.year.value:
                 self._start -= year.__class__.DAYS_SKIPPED * DAY
         else:
-            super(GregorianYear, self).__init__(year)
+            super().__init__(year)
 
     @classmethod
     def leap_year(cls, year_value):
@@ -202,7 +205,7 @@ class BritishYear(CivilYear):
             self._value = year.value
             self._start = year.start
         else:
-            super(BritishYear, self).__init__(year)
+            super().__init__(year)
 
     def adjust_date(self, month, date):
         """Check if the month and date supplied are valid for the current year.
@@ -228,7 +231,7 @@ class BritishYear(CivilYear):
                  self.FIRST_GREGORIAN_DATE.date):
             raise BadDate("Dates from 3rd to 13th September 1752 are invalid")
         else:
-            return super(BritishYear, self).adjust_date(month, date)
+            return super().adjust_date(month, date)
 
     @classmethod
     def _base_year(cls, year_value):
@@ -274,24 +277,21 @@ class BritishYear(CivilYear):
                      (self.LAST_JULIAN_DATE.year.value,
                       self.LAST_JULIAN_DATE.month,
                       self.LAST_JULIAN_DATE.date)
-        self.year, month, date = super(BritishYear,
-                                       self).add_days(month, date, days)
+        self.year, month, date = super().add_days(month, date, days)
         if julian_old:
             if (self._value, month, date) > \
                     (self.LAST_JULIAN_DATE.year.value,
                      self.LAST_JULIAN_DATE.month,
                      self.LAST_JULIAN_DATE.date):
                 (self.year,
-                 month, date) = super(BritishYear,
-                                      self).add_days(month, date,
-                                                     self.DAYS_SKIPPED)
+                 month, date) = super().add_days(month, date,
+                                                 self.DAYS_SKIPPED)
         else:
             if (self._value, month, date) < \
                     (self.FIRST_GREGORIAN_DATE.year.value,
                      self.FIRST_GREGORIAN_DATE.month,
                      self.FIRST_GREGORIAN_DATE.date):
                 (self.year,
-                 month, date) = super(BritishYear,
-                                      self).add_days(month, date,
-                                                     -self.DAYS_SKIPPED)
+                 month, date) = super().add_days(month, date,
+                                                 -self.DAYS_SKIPPED)
         return self.year, month, date
