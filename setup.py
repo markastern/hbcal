@@ -67,9 +67,8 @@ def get_version(package_name):
 def install_requires():
     """Get the list of package requirements (python version specific)
     """
-    requirements = ["future"]
-    if sys.version_info < (3, 4):
-        requirements.append("enum34")
+    requirements = ['future',
+                    'enum34; python_version < "3.4"']
     return requirements
 
 
