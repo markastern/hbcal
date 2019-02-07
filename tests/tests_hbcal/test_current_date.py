@@ -40,63 +40,53 @@ class Wrapper(object):
         """Class containing tests that are run for both day and night."""
         def test_today(self):
             output = hbcal("hbcal -ic -fphonetics")
-            self.assertEqual(2, len(output))
-            self.assertEqual('Friday 1 January 2010', output[0])
-            self.assertEqual('Friday 15 Teveth 5770', output[1])
+            self.assertEqual({'Friday 1 January 2010',
+                              'Friday 15 Teveth 5770'}, set(output))
 
         def test_today_gregorian(self):
             output = hbcal("hbcal -ig -fphonetics")
-            self.assertEqual(2, len(output))
-            self.assertEqual('Friday 1 January 2010', output[0])
-            self.assertEqual('Friday 15 Teveth 5770', output[1])
+            self.assertEqual({'Friday 1 January 2010',
+                              'Friday 15 Teveth 5770'}, set(output))
 
         def test_today_julian(self):
             output = hbcal("hbcal -ij -fphonetics")
-            self.assertEqual(2, len(output))
-            self.assertEqual('Friday 1 January 2010', output[0])
-            self.assertEqual('Friday 15 Teveth 5770', output[1])
+            self.assertEqual({'Friday 1 January 2010',
+                              'Friday 15 Teveth 5770'}, set(output))
 
         def test_today_daf(self):
             output = hbcal("hbcal -id -fphonetics")
-            self.assertEqual(2, len(output))
-            self.assertEqual('Friday 1 January 2010', output[0])
-            self.assertEqual('Friday 15 Teveth 5770', output[1])
+            self.assertEqual({'Friday 1 January 2010',
+                              'Friday 15 Teveth 5770'}, set(output))
 
         def test_same_month(self):
             output = hbcal("hbcal -ic -fphonetics 21")
-            self.assertEqual(2, len(output))
-            self.assertEqual('Thursday 21 January 2010', output[0])
-            self.assertEqual('Thursday 6 Shevat 5770', output[1])
+            self.assertEqual({'Thursday 21 January 2010',
+                              'Thursday 6 Shevat 5770'}, set(output))
 
         def test_same_month_gregorian(self):
             output = hbcal("hbcal -ig -fphonetics 21")
-            self.assertEqual(2, len(output))
-            self.assertEqual('Thursday 21 January 2010', output[0])
-            self.assertEqual('Thursday 6 Shevat 5770', output[1])
+            self.assertEqual({'Thursday 21 January 2010',
+                              'Thursday 6 Shevat 5770'}, set(output))
 
         def test_same_month_julian(self):
             output = hbcal("hbcal -ij -fphonetics 21")
-            self.assertEqual(2, len(output))
-            self.assertEqual('Sunday 3 January 2010', output[0])
-            self.assertEqual('Sunday 17 Teveth 5770', output[1])
+            self.assertEqual({'Sunday 3 January 2010',
+                              'Sunday 17 Teveth 5770'}, set(output))
 
         def test_same_year(self):
             output = hbcal("hbcal -ic -fphonetics 21 4")
-            self.assertEqual(2, len(output))
-            self.assertEqual('Wednesday 21 April 2010', output[0])
-            self.assertEqual('Wednesday 7 Iyar 5770', output[1])
+            self.assertEqual({'Wednesday 21 April 2010',
+                              'Wednesday 7 Iyar 5770'}, set(output))
 
         def test_same_year_gregorian(self):
             output = hbcal("hbcal -ig -fphonetics 21 4")
-            self.assertEqual(2, len(output))
-            self.assertEqual('Wednesday 21 April 2010', output[0])
-            self.assertEqual('Wednesday 7 Iyar 5770', output[1])
+            self.assertEqual({'Wednesday 21 April 2010',
+                              'Wednesday 7 Iyar 5770'}, set(output))
 
         def test_same_year_julian(self):
             output = hbcal("hbcal -ij -fphonetics 21 4")
-            self.assertEqual(2, len(output))
-            self.assertEqual('Monday 4 May 2009', output[0])
-            self.assertEqual('Monday 10 Iyar 5769', output[1])
+            self.assertEqual({'Monday 4 May 2009', 'Monday 10 Iyar 5769'},
+                             set(output))
 
         def test_same_month_zero_date(self):
             with self.assertRaises(SystemExit):
@@ -104,15 +94,13 @@ class Wrapper(object):
 
         def test_same_month_minus_date(self):
             output = hbcal("hbcal -ic -fphonetics -1")
-            self.assertEqual(2, len(output))
-            self.assertEqual('Sunday 31 January 2010', output[0])
-            self.assertEqual('Sunday 16 Shevat 5770', output[1])
+            self.assertEqual({'Sunday 31 January 2010',
+                              'Sunday 16 Shevat 5770'}, set(output))
 
         def test_minus_month(self):
             output = hbcal("hbcal -ic -fphonetics 21 -1")
-            self.assertEqual(2, len(output))
-            self.assertEqual('Tuesday 21 December 2010', output[0])
-            self.assertEqual('Tuesday 14 Teveth 5771', output[1])
+            self.assertEqual({'Tuesday 21 December 2010',
+                              'Tuesday 14 Teveth 5771'}, set(output))
 
 
 @freeze_time("2010-01-01 14:35:35")
@@ -121,40 +109,34 @@ class TestCurrentDateDay(Wrapper.CommonTests):
 
     def test_today_hebrew(self):
         output = hbcal("hbcal -ih -fphonetics")
-        self.assertEqual(2, len(output))
-        self.assertEqual('Friday 1 January 2010', output[0])
-        self.assertEqual('Friday 15 Teveth 5770', output[1])
+        self.assertEqual({'Friday 1 January 2010', 'Friday 15 Teveth 5770'},
+                         set(output))
 
     def test_today_daf_hebrew(self):
         """Test daf yomi input calendar when bound to Hebrew calendar"""
         output = hbcal("hbcal -id --dafbind hebrew -fphonetics")
-        self.assertEqual(2, len(output))
-        self.assertEqual('Friday 1 January 2010', output[0])
-        self.assertEqual('Friday 15 Teveth 5770', output[1])
+        self.assertEqual({'Friday 1 January 2010', 'Friday 15 Teveth 5770'},
+                         set(output))
 
     def test_same_month_hebrew(self):
         output = hbcal("hbcal -ih -fphonetics 21")
-        self.assertEqual(2, len(output))
-        self.assertEqual('Thursday 7 January 2010', output[0])
-        self.assertEqual('Thursday 21 Teveth 5770', output[1])
+        self.assertEqual({'Thursday 7 January 2010',
+                          'Thursday 21 Teveth 5770'}, set(output))
 
     def test_same_tractate(self):
         output = hbcal("hbcal -id -fphonetics 21")
-        self.assertEqual(2, len(output))
-        self.assertEqual('Friday 11 September 2009', output[0])
-        self.assertEqual('Friday 22 Ellul 5769', output[1])
+        self.assertEqual({'Friday 11 September 2009', 'Friday 22 Ellul 5769'},
+                         set(output))
 
     def test_same_year_hebrew(self):
         output = hbcal("hbcal -ih -fphonetics 21 4")
-        self.assertEqual(2, len(output))
-        self.assertEqual('Saturday 3 July 2010', output[0])
-        self.assertEqual('Saturday 21 Tammuz 5770', output[1])
+        self.assertEqual({'Saturday 3 July 2010', 'Saturday 21 Tammuz 5770'},
+                         set(output))
 
     def test_same_daf_yomi_cycle(self):
         output = hbcal("hbcal -id -fphonetics 21 4")
-        self.assertEqual(2, len(output))
-        self.assertEqual('Tuesday 7 February 2006', output[0])
-        self.assertEqual('Tuesday 9 Shevat 5766', output[1])
+        self.assertEqual({'Tuesday 7 February 2006', 'Tuesday 9 Shevat 5766'},
+                         set(output))
 
 
 @freeze_time("2010-01-01 19:35:35")
@@ -167,46 +149,39 @@ class TestCurrentDateNight(Wrapper.CommonTests):
 
     def test_today_hebrew(self):
         output = hbcal("hbcal -ih -fphonetics")
-        self.assertEqual(2, len(output))
-        self.assertEqual('Saturday 2 January 2010', output[0])
-        self.assertEqual('Saturday 16 Teveth 5770', output[1])
+        self.assertEqual({'Saturday 2 January 2010',
+                          'Saturday 16 Teveth 5770'}, set(output))
 
     def test_today_daf(self):
         output = hbcal("hbcal -id -fphonetics")
-        self.assertEqual(2, len(output))
-        self.assertEqual('Friday 1 January 2010', output[0])
-        self.assertEqual('Friday 15 Teveth 5770', output[1])
+        self.assertEqual({'Friday 1 January 2010',
+                          'Friday 15 Teveth 5770'}, set(output))
 
     def test_today_daf_hebrew(self):
         """Test daf yomi input calendar when bound to Hebrew calendar"""
         output = hbcal("hbcal -id --dafbind hebrew -fphonetics")
-        self.assertEqual(2, len(output))
-        self.assertEqual('Saturday 2 January 2010', output[0])
-        self.assertEqual('Saturday 16 Teveth 5770', output[1])
+        self.assertEqual({'Saturday 2 January 2010',
+                          'Saturday 16 Teveth 5770'}, set(output))
 
     def test_same_month_hebrew(self):
         output = hbcal("hbcal -ih -fphonetics 21")
-        self.assertEqual(2, len(output))
-        self.assertEqual('Thursday 7 January 2010', output[0])
-        self.assertEqual('Thursday 21 Teveth 5770', output[1])
+        self.assertEqual({'Thursday 7 January 2010',
+                          'Thursday 21 Teveth 5770'}, set(output))
 
     def test_same_tractate(self):
         output = hbcal("hbcal -id -fphonetics 21")
-        self.assertEqual(2, len(output))
-        self.assertEqual('Friday 11 September 2009', output[0])
-        self.assertEqual('Friday 22 Ellul 5769', output[1])
+        self.assertEqual({'Friday 11 September 2009', 'Friday 22 Ellul 5769'},
+                         set(output))
 
     def test_same_year_hebrew(self):
         output = hbcal("hbcal -ih -fphonetics 21 4")
-        self.assertEqual(2, len(output))
-        self.assertEqual('Saturday 3 July 2010', output[0])
-        self.assertEqual('Saturday 21 Tammuz 5770', output[1])
+        self.assertEqual({'Saturday 3 July 2010', 'Saturday 21 Tammuz 5770'},
+                         set(output))
 
     def test_same_daf_yomi_cycle(self):
         output = hbcal("hbcal -id -fphonetics 21 4")
-        self.assertEqual(2, len(output))
-        self.assertEqual('Tuesday 7 February 2006', output[0])
-        self.assertEqual('Tuesday 9 Shevat 5766', output[1])
+        self.assertEqual({'Tuesday 7 February 2006', 'Tuesday 9 Shevat 5766'},
+                         set(output))
 
 
 @freeze_time('2015-12-14 13:45:32')
@@ -221,9 +196,8 @@ class TestSameTractateDay(TestCase):
         date is for daf 21 of the old tractate.
         """
         output = hbcal("hbcal -id --dafbind hebrew -fphonetics 21")
-        self.assertEqual(2, len(output))
-        self.assertEqual('Monday 16 November 2015', output[0])
-        self.assertEqual('Monday 4 Kislev 5776', output[1])
+        self.assertEqual({'Monday 16 November 2015', 'Monday 4 Kislev 5776'},
+                         set(output))
 
 
 @freeze_time('2015-12-14 18:45:32')
@@ -239,9 +213,8 @@ class TestSameTractateNight(TestCase):
         """
 
         output = hbcal("hbcal -id --dafbind hebrew -fphonetics 21")
-        self.assertEqual(2, len(output))
-        self.assertEqual('Sunday 3 January 2016', output[0])
-        self.assertEqual('Sunday 22 Teveth 5776', output[1])
+        self.assertEqual({'Sunday 3 January 2016', 'Sunday 22 Teveth 5776'},
+                         set(output))
 
 
 @freeze_time('2012-08-02 13:45:32')
@@ -256,9 +229,8 @@ class TestSameDafYomiCycleDay(TestCase):
         date is for Pesachim 21 of the old cycle.
         """
         output = hbcal("hbcal -id --dafbind hebrew -fphonetics 21 4")
-        self.assertEqual(2, len(output))
-        self.assertEqual('Tuesday 7 February 2006', output[0])
-        self.assertEqual('Tuesday 9 Shevat 5766', output[1])
+        self.assertEqual({'Tuesday 7 February 2006', 'Tuesday 9 Shevat 5766'},
+                         set(output))
 
 
 @freeze_time('2012-08-02 18:45:32')
@@ -274,9 +246,8 @@ class TestSameDafYomiCycleNight(TestCase):
         """
 
         output = hbcal("hbcal -id --dafbind hebrew -fphonetics 21 4")
-        self.assertEqual(2, len(output))
-        self.assertEqual('Thursday 11 July 2013', output[0])
-        self.assertEqual('Thursday 4 Av 5773', output[1])
+        self.assertEqual({'Thursday 11 July 2013', 'Thursday 4 Av 5773'},
+                         set(output))
 
 
 if __name__ == "__main__":

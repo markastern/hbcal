@@ -16,8 +16,6 @@
 # You should have received a copy of the GNU General Public License
 # along with Hbcal.  If not, see <http://www.gnu.org/licenses/>.
 
-from abc import ABCMeta
-
 from future.builtins import super
 
 from .abs_time import AbsTime, DAY
@@ -50,7 +48,6 @@ class CivilMonth(Month):
 
 class CivilYear(Year):
     """An abstract base class for different variants of civil year"""
-    __metaclass__ = ABCMeta
 
     # The first full civil year
     FIRST_YEAR = -3758
