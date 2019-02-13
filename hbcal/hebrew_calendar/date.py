@@ -391,7 +391,6 @@ class RegularYear(Year):
     Hebrew years this is only true of the Molad used to calculate
     the start of the year (so cycles are not exactly the same length).
     """
-    __metaclass__ = ABCMeta
 
     @classmethod
     def _years_per_cycle(cls):

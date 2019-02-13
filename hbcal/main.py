@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python
 """This is the main module of hbcal. It accepts an input according
    to one calendar and prints the date according to one or more
    other calendars. Calendars supported are Gregorian, Julian, Civil
@@ -34,11 +34,12 @@ except ImportError:
     from ConfigParser import RawConfigParser
 import os.path as path
 from future.builtins import dict
+from future.utils import PY2
 from hbcal.configuration_utilities import (SingleConfigurationParameter,
                                            MultiConfigurationParameter,
                                            BinaryConfigurationParameter,
                                            DuplicateError,
-                                           StoreRestrictiveList,
+                                           StoreRestrictiveSet,
                                            add_negatable_option,
                                            ArgumentParser)
 from hbcal.hebrew_calendar.date import Date, DateTime
@@ -97,7 +98,7 @@ def get_config():
                                                         'civil')),
         ('dafbind', SingleConfigurationParameter(DAFBIND_TYPES, 'civil')),
         ('format', SingleConfigurationParameter(FORMAT_TYPES, 'normal')),
-        ('output calendar', MultiConfigurationParameter(CALENDAR_TYPES,
+        ('output calendar', MultiConfigurationParameter(CALENDAR_TYPES.keys(),
                                                         ['civil', 'hebrew'],
                                                         (("julian",
                                                           "gregorian",
@@ -154,12 +155,13 @@ def parse_arguments(args, parameters):
                                 formatter_class=RawDescriptionHelpFormatter,
                                 add_help=False)
     fmt_parser.add_argument("-f", "--format", nargs=1,
-                            action=StoreRestrictiveList,
+                            action=StoreRestrictiveSet,
                             choices=FORMAT_TYPES, type=str.lower,
                             default=parameters['format'].value,
                             help="format for output of hebrew")
+
     fmt_args = fmt_parser.parse_known_args(args[1:])[0]
-    fmt = FORMATS[fmt_args.format[0]]['fmt']
+    fmt = FORMATS[next(iter(fmt_args.format))]['fmt']
     template_directory = path.join(path.dirname(path.realpath(__file__)),
                                    'templates')
     help_file = codecs.open(path.join(template_directory, 'help'),
@@ -189,18 +191,18 @@ Convert a date to one or more other calendars.""",
     parser.add_argument('--version', action='version',
                         version="{name} {version}".
                         format(name=prog_name, version=__version__))
-    parser.add_argument("-i", "--input", nargs=1, action=StoreRestrictiveList,
+    parser.add_argument("-i", "--input", nargs=1, action=StoreRestrictiveSet,
                         choices=CALENDAR_TYPES, type=str.lower,
                         default=parameters['input calendar'].value,
                         help="input calendar (see Calendars)")
     group = parser.add_mutually_exclusive_group()
     group.add_argument("-o", "--output", nargs='*',
-                       action=StoreRestrictiveList,
+                       action=StoreRestrictiveSet,
                        choices=CALENDAR_TYPES, type=str.lower,
                        mutex_groups=(('civil', 'gregorian', 'julian'),),
                        default=parameters['output calendar'].value,
                        help="output calendar(s) (see Calendars)")
-    parser.add_argument("--dafbind", nargs=1, action=StoreRestrictiveList,
+    parser.add_argument("--dafbind", nargs=1, action=StoreRestrictiveSet,
                         choices=DAFBIND_TYPES, type=str.lower,
                         default=parameters['dafbind'].value,
                         help="calendar to which daf yomi calendar should " +
@@ -218,7 +220,7 @@ Convert a date to one or more other calendars.""",
                          help="use Israel for sedrahs")
     parser.add_argument("date", nargs="?", action="store", type=int,
                         help="day of the month (integer)")
-    parser.add_argument("month", nargs="?", action="store", type=int,
+    parser.add_argument("month", nargs="?", action="store",
                         help="month of the year (integer)")
     parser.add_argument("year", nargs="?", action="store", type=int,
                         help="year (integer)")
@@ -228,7 +230,7 @@ Convert a date to one or more other calendars.""",
         parser.error("No more than one of 'gregorian', 'julian', 'civil' " +
                      "may be specified as an output calendar")
     for arg in ["input", "format", "dafbind"]:
-        setattr(args, arg, getattr(args, arg)[0])
+        setattr(args, arg, next(iter(getattr(args, arg))))
 
     return args, parser
 
@@ -270,9 +272,32 @@ def input_date(args, input_class):
         current_year = current_date.year
     else:
         current_year = input_class(args.year)
-    return Date(current_year,
-                args.month if args.month is not None else current_date.month,
+    if args.month is None:
+        month = current_date.month
+    else:
+        try:
+            month = int(args.month)
+        except ValueError:
+            month = get_month_from_name(args.month.capitalize(),
+                                        current_year)
+    return Date(current_year, month,
                 args.date if args.date is not None else current_date.date)
+
+
+def get_month_from_name(month_name, current_year):
+    """Get the numerical value of a month from the supplied name"""
+
+    month = None
+    for allowed_month in current_year.months():
+        if allowed_month.__format__('#H').startswith(
+                month_name.decode(sys.stdin.encoding) if PY2 else month_name):
+            if month is None:
+                month = allowed_month.value
+            else:
+                raise ValueError("Ambiguous month")
+    if month is None:
+        raise ValueError("Invalid month")
+    return month
 
 
 def get_output_line(argv):

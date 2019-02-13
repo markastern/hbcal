@@ -10,3 +10,7 @@ htmlcov
 .tox
 build
 dist
+bin
+lib
+lib64
+pyvenv.cfg

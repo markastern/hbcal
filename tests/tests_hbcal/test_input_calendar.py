@@ -22,6 +22,7 @@ for the 'input calendar' configuration file option.
 import unittest
 import logging
 import sys
+from future.utils import PY2
 from hbcal.configuration_utilities import (
         ConfigurationParameterAmbiguousError,
         ConfigurationParameterValueError)
@@ -209,6 +210,83 @@ class TestInvalidValue(TestCase):
         """Test default value of --input parameter."""
         with self.assertRaises(ConfigurationParameterValueError):
             hbcal("hbcal -ih -oc 2 6 5775")
+
+
+class TestWordMonth(TestCase):
+    """Tests for the month as a word"""
+
+    def test_civil_option_2015(self):
+        """Test --input parameter with civil calendar after 1752"""
+        output = hbcal("hbcal --input civil -oc 17 August 2015")
+        self.assertEqual(output[0], 'Monday 17 August 2015')
+
+    def test_civil_option_1750(self):
+        """Test --input parameter with civil calendar before 1752."""
+        output = hbcal("hbcal --input civil -oc 17 August 1750")
+        self.assertEqual(output[0], 'Friday 17 August 1750')
+
+    def test_gregorian_option_2015(self):
+        """Test --input parameter with Gregorian calendar after 1752."""
+        output = hbcal("hbcal --input gregorian -oc 17 August 2015")
+        self.assertEqual(output[0], 'Monday 17 August 2015')
+
+    def test_gregorian_option_1750(self):
+        """Test --input parameter with Gregorian calendar before 1752."""
+        output = hbcal("hbcal --input gregorian -oc 17 August 1750")
+        self.assertEqual(output[0], 'Monday 6 August 1750')
+
+    def test_julian_option_2015(self):
+        """Test --input parameter with Julian calendar after 1752."""
+        output = hbcal("hbcal --input julian -oc 17 August 2015")
+        self.assertEqual(output[0], 'Sunday 30 August 2015')
+
+    def test_julian_option_1750(self):
+        """Test --input parameter with Julian calendar before 1752."""
+        output = hbcal("hbcal --input julian -oc 17 August 1750")
+        self.assertEqual(output[0], 'Friday 17 August 1750')
+
+    def test_hebrew_option_5775(self):
+        """Test --input parameter with Hebrew calendar."""
+        command = u"hbcal --input hebrew -oc 2 \u05D0\u05DC\u05D5\u05DC 5775"
+        # Need to encode it for Python 2
+        output = hbcal(command.encode(sys.stdin.encoding) if PY2 else command)
+        self.assertEqual(output[0], 'Monday 17 August 2015')
+
+    def test_daf_option(self):
+        """Test --input parameter with Daf Yomi calendar."""
+        command = u"hbcal --input d -oc 85 \u05E0\u05D3\u05E8\u05D9\u05DD 13"
+        # Need to encode it for Python 2
+        output = hbcal(command.encode(sys.stdin.encoding) if PY2 else command)
+        self.assertEqual(output[0], 'Monday 17 August 2015')
+
+    def test_mixed_case(self):
+        """Test where month has mixed case."""
+        output = hbcal("hbcal --input civil -oc 17 auGUSt 2015")
+        self.assertEqual(output[0], 'Monday 17 August 2015')
+
+    def test_abbreviated(self):
+        """Test where month is abbreviated."""
+        output = hbcal("hbcal --input civil -oc 17 Au 2015")
+        self.assertEqual(output[0], 'Monday 17 August 2015')
+
+    def test_abbreviated_too_much(self):
+        """Test where month is abbreviated too much."""
+        with self.assertRaises(SystemExit):
+            hbcal("hbcal --input civil -oc 17 A 2015")
+
+    def test_adar_regular_year(self):
+        """Test input of adar in year with 12 months"""
+        command = u"hbcal --input hebrew -oc 12 \u05D0\u05D3\u05E8 5775"
+        # Need to encode it for Python 2
+        output = hbcal(command.encode(sys.stdin.encoding) if PY2 else command)
+        self.assertEqual(output[0], 'Tuesday 3 March 2015')
+
+    def test_adar_leap_year(self):
+        """Test input of adar in year with 12 months"""
+        command = u"hbcal --input hebrew -oc 12 \u05D0\u05D3\u05E8 5776"
+        with self.assertRaises(SystemExit):
+            # Need to encode it for Python 2
+            hbcal(command.encode(sys.stdin.encoding) if PY2 else command)
 
 
 if __name__ == "__main__":
