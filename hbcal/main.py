@@ -34,6 +34,7 @@ except ImportError:
     from ConfigParser import RawConfigParser
 import os.path as path
 from future.builtins import dict
+from future.utils import PY2
 from hbcal.configuration_utilities import (SingleConfigurationParameter,
                                            MultiConfigurationParameter,
                                            BinaryConfigurationParameter,
@@ -219,7 +220,7 @@ Convert a date to one or more other calendars.""",
                          help="use Israel for sedrahs")
     parser.add_argument("date", nargs="?", action="store", type=int,
                         help="day of the month (integer)")
-    parser.add_argument("month", nargs="?", action="store", type=int,
+    parser.add_argument("month", nargs="?", action="store",
                         help="month of the year (integer)")
     parser.add_argument("year", nargs="?", action="store", type=int,
                         help="year (integer)")
@@ -271,9 +272,32 @@ def input_date(args, input_class):
         current_year = current_date.year
     else:
         current_year = input_class(args.year)
-    return Date(current_year,
-                args.month if args.month is not None else current_date.month,
+    if args.month is None:
+        month = current_date.month
+    else:
+        try:
+            month = int(args.month)
+        except ValueError:
+            month = get_month_from_name(args.month.capitalize(),
+                                        current_year)
+    return Date(current_year, month,
                 args.date if args.date is not None else current_date.date)
+
+
+def get_month_from_name(month_name, current_year):
+    """Get the numerical value of a month from the supplied name"""
+
+    month = None
+    for allowed_month in current_year.months():
+        if allowed_month.__format__('#H').startswith(
+                month_name.decode(sys.stdin.encoding) if PY2 else month_name):
+            if month is None:
+                month = allowed_month.value
+            else:
+                raise ValueError("Ambiguous month")
+    if month is None:
+        raise ValueError("Invalid month")
+    return month
 
 
 def get_output_line(argv):
