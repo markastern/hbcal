@@ -105,14 +105,9 @@ class AllowedOnlySet(MutableSet):
     def __repr__(self):
         return '{}({!r}, allowed = {!r}, mutex_groups = {!r})'.format(
             self.__class__.__name__,
-            [item for item in self.myset],
+            [item for item in self],
             self.allowed,
             self.mutex_groups)
-
-        def __repr__(self):
-            return 'RestrictiveSet({contents!r})'.format(
-                name=self.__class__.__name__,
-                contents=[item for item in self.myset])
 
 
 class RestrictiveSet(AllowedOnlySet, AbbrevSet):
@@ -264,9 +259,9 @@ class StoreRestrictiveSet(argparse.Action):
     This class is an Action class for argparse.
 
     Attributes:
-        allowed: The allowed options (instance of AbbrevList)
+        allowed: The allowed options (instance of AbbrevSet)
         mutex_groups: List of mutually exclusive groups
-        restrictive_list: The RestrictiveList object
+        restrictive_set: The RestrictiveSet object
     """
 
     def __init__(self, option_strings, choices, mutex_groups=None,
