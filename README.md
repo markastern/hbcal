@@ -38,12 +38,15 @@ $ hbcal --sedrah --input civil --output hebrew daf -- 1 1 2016
 Structure reorganized. Makefile replaced with a python setup script.
 
 ## Changes in version 0.9.0
-Now compatible with python version 3.4+. Python 3.3 might also work, but is not tested)
+Now compatible with python version 3.4+. Python 3.3 might also work, but is not tested).
 
 ## Changes in version 0.9.1
-Uses the Python 3 argument-less version of super
+Uses the Python 3 argument-less version of super.
 
 ## Changes in version 0.9.2
-Fixed setup script so that enum34 is installed only for python < 3.4
+Fixed setup script so that enum34 is installed only for python < 3.4.
+
+## Changes in version 0.10.0
+Month can now be specified as a word instead of a number
 
 By Mark Stern (markalexstern@gmail.com)

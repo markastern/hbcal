@@ -92,7 +92,6 @@ if __name__ == "__main__":
               packages=find_packages(exclude=["*.tests", "*.tests.*",
                                               "tests.*", "tests"]),
               package_data={'hbcal': ['templates/*']},
-              py_modules=['configuration_utilities'],
               python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*',
               entry_points={'console_scripts': ['hbcal = hbcal.main:main']},
               install_requires=install_requires(),

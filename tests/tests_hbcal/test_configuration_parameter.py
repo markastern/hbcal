@@ -19,9 +19,9 @@
 import unittest
 import logging
 import sys
-from hbcal.configuration_utilities import AbbrevList, AmbiguousKeyError,\
+from hbcal.configuration_utilities import AbbrevSet,\
     SingleConfigurationParameter, MultiConfigurationParameter,\
-    ConfigurationParameterDefaultError
+    ConfigurationParameterDefaultError, RestrictiveSet
 
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
@@ -30,44 +30,45 @@ class TestSingleDefault(unittest.TestCase):
 
     def test_default_not_allowed(self):
         with self.assertRaises(ConfigurationParameterDefaultError):
-            SingleConfigurationParameter(AbbrevList(['value1', 'value2']),
+            SingleConfigurationParameter(AbbrevSet(['value1', 'value2']),
                                          'value3')
 
     def test_default_ambiguous(self):
         with self.assertRaises(ConfigurationParameterDefaultError):
-            SingleConfigurationParameter(AbbrevList(['value1', 'value2']),
+            SingleConfigurationParameter(AbbrevSet(['value1', 'value2']),
                                          'value')
 
     def test_default_valid(self):
-        parameter = SingleConfigurationParameter(AbbrevList(['value1',
-                                                             'value2']),
+        parameter = SingleConfigurationParameter(AbbrevSet(['value1',
+                                                            'value2']),
                                                  'value2')
-        self.assertEqual(parameter.value, ['value2'])
+        self.assertEqual(parameter.value, {'value2'})
 
 
 class TestMultiDefault(unittest.TestCase):
 
     def test_default_not_allowed(self):
         with self.assertRaises(KeyError):
-            MultiConfigurationParameter(AbbrevList(['value1', 'value2']),
+            MultiConfigurationParameter(AbbrevSet(['value1', 'value2']),
                                         ['value2', 'value3'])
 
     def test_default_ambiguous(self):
-        with self.assertRaises(AmbiguousKeyError):
-            MultiConfigurationParameter(AbbrevList(['value1', 'value2']),
+        with self.assertRaises(KeyError):
+            MultiConfigurationParameter(AbbrevSet(['value1', 'value2']),
                                         ['value'])
 
     def test_default_valid(self):
-        parameter = MultiConfigurationParameter(AbbrevList(['value1',
-                                                            'value2']),
+        parameter = MultiConfigurationParameter(AbbrevSet(['value1',
+                                                           'value2']),
                                                 ['value2'])
-        self.assertEqual(parameter.value, ['value2'])
+        self.assertEqual(parameter.value, RestrictiveSet(['value2']))
 
     def test_multi_default_valid(self):
-        parameter = MultiConfigurationParameter(AbbrevList(['value1',
-                                                            'value2']),
+        parameter = MultiConfigurationParameter(AbbrevSet(['value1',
+                                                           'value2']),
                                                 ['value2', 'value1'])
-        self.assertEqual(parameter.value, ['value2', 'value1'])
+        self.assertEqual(parameter.value,
+                         RestrictiveSet(['value2', 'value1']))
 
 
 if __name__ == "__main__":

@@ -22,10 +22,15 @@ except ImportError:
     from ConfigParser import NoSectionError, NoOptionError
 
 from abc import ABCMeta, abstractmethod
+try:
+    from collections.abc import MutableSet
+except ImportError:
+    from collections import MutableSet
 import argparse
 import sys as _sys
 from future.utils import PY2, with_metaclass
 from future.builtins import super
+from .abbrev_set import AbbrevSet, AmbiguousKeyError
 
 
 class ConfigurationParameterException(Exception):
@@ -57,97 +62,69 @@ class ConfigurationParameterAmbiguousError(ConfigurationParameterException):
     pass
 
 
-class AmbiguousKeyError(KeyError):
-    """An exception class raised by AbbrevList if the supplied key could be
-    used to provide two or more possible values."""
-    pass
-
-
-class AbbrevList(list):
-    """This class provides a list with lookup by key (not index). Only the
-    start of the key needs to be provided - if it matches one of the keys
-    the key is returned. If it matches more than one key, an exception
-    (AmbiguousKeyError) is raised."""
-
-    def __getitem__(self, item):
-        found = None
-        for listitem in self:
-            if listitem.startswith(item):
-                if found is None:
-                    found = listitem
-                else:
-                    raise AmbiguousKeyError
-        if found is None:
-            raise KeyError
-        return found
-
-    def __contains__(self, item):
-        try:
-            self[item]
-        except KeyError:
-            return False
-        else:
-            return True
-
-
 class DuplicateError(Exception):
     """Exception class.
 
-    Raised when attempting to modify the string in StringHolder."""
+    Raised when a mutually exclusive constraint would be violated."""
     pass
 
 
-class RestrictiveList(list):
-    """A list that only allows specified values with mutually exclusive groups.
+class AllowedOnlySet(MutableSet):
+    def __init__(self, iter=None, *args, **kwargs):
+        for kwarg in ('allowed', 'mutex_groups'):
+            if kwarg in kwargs:
+                value = kwargs[kwarg]
+                setattr(self, kwarg,
+                        value if kwarg == 'allowed' or value is None
+                        else tuple(frozenset(elem for elem in group)
+                                   for group in value))
+                del kwargs[kwarg]
+            else:
+                setattr(self, kwarg, None)
+        super().__init__(**kwargs)
+        if iter is not None:
+            for value in iter:
+                self.add(value)
+
+    def add(self, value):
+        if self.allowed is not None:
+            try:
+                value = self.allowed[value]
+            except TypeError:
+                pass
+            if value not in self.allowed:
+                raise KeyError
+        if self.mutex_groups is not None:
+            for group in self.mutex_groups:
+                if value in group:
+                    for element in group:
+                        if element != value and element in self:
+                            raise DuplicateError
+        super().add(value)
+
+    def __repr__(self):
+        return '{}({!r}, allowed = {!r}, mutex_groups = {!r})'.format(
+            self.__class__.__name__,
+            [item for item in self],
+            self.allowed,
+            self.mutex_groups)
+
+
+class RestrictiveSet(AllowedOnlySet, AbbrevSet):
+    """A set that only allows specified values with mutually exclusive groups.
 
     When the instance is created, it is empty. Elements may be appended,
-    provided that they are in the allowed list (may be abbreviated), and
+    provided that they are in the allowed set (may be abbreviated), and
     provided that this would not leave more than one element of a mutually
-    exclusive group as elements of the instance.
+    exclusive group as elements of the instance
 
     Attributes:
-        allowed: An AbbrevList specifying the allowed values.
-        mutex_groups: A dictionary. Keys are elements in mutually exclusive
-            groups. Values are lists of up to one element. All keys in one
-            mutually exclusive group share the same value (list).
+        allowed: A set specifying the allowed values.
+        mutex_groups: A collection of groups of elements. At most one element
+            from each group may be added to the set.
     """
 
-    def __init__(self, allowed, mutex_groups=None):
-        super().__init__()
-        self.allowed = allowed
-        self.mutex_groups = {}
-        for group in mutex_groups if mutex_groups else []:
-            holder = []
-            for element in group:
-                self.mutex_groups[allowed[element]] = holder
-
-    def append(self, p_object):
-        """Append an item to the instance.
-
-        Raises:
-            DuplicateError: If appending the item would violate a mutually
-                exclusive constraint.
-        """
-        key = self.allowed[p_object]
-        if key in self.mutex_groups:
-            holder = self.mutex_groups[key]
-            if not holder:
-                holder.append(key)
-            elif holder[0] != key:
-                raise DuplicateError
-        super().append(key)
-
-    def __delslice__(self, start, stop):
-        """Only needed in python 2."""
-        self.__delitem__(slice(start, stop))
-
-    def __delitem__(self, key):
-        for element in self.__getitem__(key) if isinstance(key, slice) \
-                else (self.__getitem__(key), ):
-            if element in self.mutex_groups:
-                holder = self.mutex_groups[element]
-                del holder[0]
-        super().__delitem__(key)
+    pass
 
 
 class ConfigurationParameter(with_metaclass(ABCMeta, object)):
@@ -207,6 +184,11 @@ class ConfigurationParameter(with_metaclass(ABCMeta, object)):
             except (KeyError, DuplicateError):
                 raise ConfigurationParameterValueError
 
+    def __repr__(self):
+        return '{name}({contents!r})'.format(
+            name=self.__class__.__name__,
+            contents=self.value)
+
 
 class SingleConfigurationParameter(ConfigurationParameter):
     """ A subclass of ConfigurationParameter where a single value is required.
@@ -214,14 +196,14 @@ class SingleConfigurationParameter(ConfigurationParameter):
 
     def __init__(self, allowed, default):
         super().__init__()
-        self._allowed = AbbrevList(allowed)
+        self._allowed = AbbrevSet(allowed)
         try:
             self._value = self._allowed[default]
         except KeyError:
             raise ConfigurationParameterDefaultError
 
     def _get_value(self):
-        return [self._value]
+        return set([self._value])
 
     def _set_value(self, config_string):
         self._value = self._allowed[config_string]
@@ -240,7 +222,7 @@ class BinaryConfigurationParameter(ConfigurationParameter):
     def __init__(self):
         self._value = False
         super().__init__()
-        self._allowed = AbbrevList(("true", "yes", "false", "no"))
+        self._allowed = AbbrevSet(("true", "yes", "false", "no"))
 
     def _get_value(self):
         """Return default value for use in CLI."""
@@ -256,30 +238,30 @@ class MultiConfigurationParameter(ConfigurationParameter):
 
     def __init__(self, allowed, default, mutex_groups=None):
         super().__init__()
-        self._value = RestrictiveList(AbbrevList(allowed), mutex_groups)
-        for item in default:
-            self._value.append(item)
+        self._value = RestrictiveSet(default,
+                                     allowed=AbbrevSet(allowed),
+                                     mutex_groups=mutex_groups)
 
     def _get_value(self):
         """Return default value for use in CLI."""
         return self._value
 
     def _set_value(self, config_string):
-        del self._value[:]
+        self._value.clear()
         items = config_string.split()
         for item in items:
-            self._value.append(item)
+            self._value.add(item)
 
 
-class StoreRestrictiveList(argparse.Action):
-    """ Stores command line parameter values in a RestrictiveList object.
+class StoreRestrictiveSet(argparse.Action):
+    """ Stores command line parameter values in a RestrictiveSet object.
 
     This class is an Action class for argparse.
 
     Attributes:
-        allowed: The allowed options (instance of AbbrevList)
+        allowed: The allowed options (instance of AbbrevSet)
         mutex_groups: List of mutually exclusive groups
-        restrictive_list: The RestrictiveList object
+        restrictive_set: The RestrictiveSet object
     """
 
     def __init__(self, option_strings, choices, mutex_groups=None,
@@ -293,19 +275,20 @@ class StoreRestrictiveList(argparse.Action):
             args: Remaining positional arguments
             kwargs: Remaining keyword arguments
         """
-        self.allowed = AbbrevList(choices)
+        self.allowed = AbbrevSet(choices)
         self.mutex_groups = mutex_groups
         super().__init__(option_strings=option_strings,
                          choices=self.allowed, *args, **kwargs)
-        self.restrictive_list = None
+        self.restrictive_set = None
 
     def __call__(self, parser, namespace, values, option_string=None):
-        if self.restrictive_list is None:
-            self.restrictive_list = RestrictiveList(self.allowed,
-                                                    self.mutex_groups)
-        setattr(namespace, self.dest, self.restrictive_list)
+        if self.restrictive_set is None:
+            self.restrictive_set = RestrictiveSet(
+                allowed=self.allowed,
+                mutex_groups=self.mutex_groups)
+        setattr(namespace, self.dest, self.restrictive_set)
         for value in [self.allowed[x] for x in values]:
-            self.restrictive_list.append(value)
+            self.restrictive_set.add(value)
 
 
 class ArgumentParser(argparse.ArgumentParser):

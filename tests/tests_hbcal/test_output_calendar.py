@@ -41,113 +41,96 @@ class TestNoConfigFile(TestCase):
     def test_default_2015(self):
         """Test default value of --output parameter after 1752"""
         output = hbcal("hbcal -ic -fphonetics 17 8 2015")
-        self.assertEqual('Monday 17 August 2015', output[0])
-        self.assertEqual('Monday 2 Ellul 5775', output[1])
-        self.assertEqual(2, len(output))
+        self.assertEqual(['Monday 17 August 2015', 'Monday 2 Ellul 5775'],
+                         output)
 
     def test_default_1750(self):
         """Test default value of --output parameter before 1752"""
         output = hbcal("hbcal -ic -fphonetics 17 8 1750")
-        self.assertEqual(2, len(output))
-        self.assertEqual('Friday 17 August 1750', output[0])
-        self.assertEqual('Friday 26 Av 5510', output[1])
+        self.assertEqual(['Friday 17 August 1750', 'Friday 26 Av 5510'],
+                         output)
 
     def test_civil_option_2015(self):
         """Test --output with civil calendar after 1752"""
         output = hbcal("hbcal -ic -o civil -fphonetics 17 8 2015")
-        self.assertEqual(1, len(output))
-        self.assertEqual('Monday 17 August 2015', output[0])
+        self.assertEqual(['Monday 17 August 2015'], output)
 
     def test_civil_option_1750(self):
         """Test --output with civil calendar before 1752"""
         output = hbcal("hbcal -ic -o civil -fphonetics 17 8 1750")
-        self.assertEqual(1, len(output))
-        self.assertEqual('Friday 17 August 1750', output[0])
+        self.assertEqual(['Friday 17 August 1750'], output)
 
     def test_gregorian_option_2015(self):
         """Test --output with Gregorian calendar after 1752"""
         output = hbcal("hbcal -ic -o gregorian -fphonetics 17 8 2015")
-        self.assertEqual(1, len(output))
-        self.assertEqual('Monday 17 August 2015', output[0])
+        self.assertEqual(['Monday 17 August 2015'], output)
 
     def test_gregorian_option_1750(self):
         """Test --output with Gregorian calendar after 1752"""
         output = hbcal("hbcal -ic -o gregorian -fphonetics 17 8 1750")
-        self.assertEqual(1, len(output))
-        self.assertEqual('Friday 28 August 1750', output[0])
+        self.assertEqual(['Friday 28 August 1750'], output)
 
     def test_julian_option_2015(self):
         """Test --output with Julian calendar after 1752"""
         output = hbcal("hbcal -ic -o julian -fphonetics 17 8 2015")
-        self.assertEqual(1, len(output))
-        self.assertEqual('Monday 4 August 2015', output[0])
+        self.assertEqual(['Monday 4 August 2015'], output)
 
     def test_julian_option_1750(self):
         """Test --output with Julian calendar before 1752"""
         output = hbcal("hbcal -ic -o julian -fphonetics 17 8 1750")
-        self.assertEqual(1, len(output))
-        self.assertEqual('Friday 17 August 1750', output[0])
+        self.assertEqual(['Friday 17 August 1750'], output)
 
     def test_hebrew_option_5775(self):
         """Test --output with Hebrew calendar"""
         output = hbcal("hbcal -ic -o hebrew -fphonetics 17 8 2015")
-        self.assertEqual(1, len(output))
-        self.assertEqual('Monday 2 Ellul 5775', output[0])
+        self.assertEqual(['Monday 2 Ellul 5775'], output)
 
     def test_daf_option_5775(self):
         """Test --output with Daf Yomi calendar"""
         output = hbcal("hbcal -ic -o daf -fphonetics 17 8 2015")
-        self.assertEqual(1, len(output))
-        self.assertEqual('Nedarim 85', output[0])
+        self.assertEqual(['Nedarim 85'], output)
 
     def test_civil_hebrew_option_2015(self):
         """Test --output specifying civil and Hebrew after 1752."""
         output = hbcal("hbcal -ic -o civil hebrew -fphonetics 17 8 2015")
-        self.assertEqual(2, len(output))
-        self.assertEqual('Monday 17 August 2015', output[0])
-        self.assertEqual('Monday 2 Ellul 5775', output[1])
+        self.assertEqual(['Monday 17 August 2015', 'Monday 2 Ellul 5775'],
+                         output)
 
     def test_civil_hebrew_option_1750(self):
         """Test --output specifying civil and Hebrew before 1752."""
         output = hbcal("hbcal -ic -o civil hebrew -fphonetics 17 8 1750")
-        self.assertEqual(2, len(output))
-        self.assertEqual('Friday 17 August 1750', output[0])
-        self.assertEqual('Friday 26 Av 5510', output[1])
+        self.assertEqual(['Friday 17 August 1750', 'Friday 26 Av 5510'],
+                         output)
 
     def test_gregorian_hebrew_option_2015(self):
         """Test --output specifying Gregorian and Hebrew after 1752."""
         output = hbcal("hbcal -ic -o gregorian hebrew -fphonetics 17 8 2015")
-        self.assertEqual('Monday 17 August 2015', output[0])
-        self.assertEqual('Monday 2 Ellul 5775', output[1])
-        self.assertEqual(2, len(output))
+        self.assertEqual(['Monday 17 August 2015', 'Monday 2 Ellul 5775'],
+                         output)
 
     def test_gregorian_hebrew_option_1750(self):
         """Test --output specifying Gregorian and Hebrew before 1752."""
         output = hbcal("hbcal -ic -o gregorian hebrew -fphonetics 17 8 1750")
-        self.assertEqual(2, len(output))
-        self.assertEqual('Friday 28 August 1750', output[0])
-        self.assertEqual('Friday 26 Av 5510', output[1])
+        self.assertEqual(['Friday 28 August 1750', 'Friday 26 Av 5510'],
+                         output)
 
     def test_julian_hebrew_option_2015(self):
         """Test --output specifying Julian and Hebrew after 1752."""
         output = hbcal("hbcal -ic -o julian hebrew -fphonetics 17 8 2015")
-        self.assertEqual(2, len(output))
-        self.assertEqual('Monday 4 August 2015', output[0])
-        self.assertEqual('Monday 2 Ellul 5775', output[1])
+        self.assertEqual(['Monday 4 August 2015', 'Monday 2 Ellul 5775'],
+                         output)
 
     def test_julian_hebrew_option_1750(self):
         """Test --output specifying Julian and Hebrew before 1752."""
         output = hbcal("hbcal -ic -o julian hebrew -fphonetics 17 8 1750")
-        self.assertEqual(2, len(output))
-        self.assertEqual('Friday 17 August 1750', output[0])
-        self.assertEqual('Friday 26 Av 5510', output[1])
+        self.assertEqual(['Friday 17 August 1750', 'Friday 26 Av 5510'],
+                         output)
 
     def test_civil_daf_option_2015(self):
         """Test --output specifying Civil and Daf Yomi"""
         output = hbcal("hbcal -ic -o civil daf -fphonetics 17 8 2015")
-        self.assertEqual(2, len(output))
-        self.assertEqual('Monday 17 August 2015', output[0])
-        self.assertEqual('Nedarim 85', output[1])
+        self.assertEqual(['Monday 17 August 2015', 'Nedarim 85'],
+                         output)
 
     def test_civil_daf_option_1750(self):
         """Test --output specifying civil and daf before 1752.
@@ -156,15 +139,13 @@ class TestNoConfigFile(TestCase):
         of Daf Yomi.
         """
         output = hbcal("hbcal -ic -o civil daf -fphonetics 17 8 1750")
-        self.assertEqual(1, len(output))
-        self.assertEqual('Friday 17 August 1750', output[0])
+        self.assertEqual(['Friday 17 August 1750'],
+                         output)
 
     def test_gregorian_daf_option_2015(self):
         """Test --output specifying Gregorian and Daf Yomi"""
         output = hbcal("hbcal -ic -o gregorian daf -fphonetics 17 8 2015")
-        self.assertEqual(2, len(output))
-        self.assertEqual('Monday 17 August 2015', output[0])
-        self.assertEqual('Nedarim 85', output[1])
+        self.assertEqual(['Monday 17 August 2015', 'Nedarim 85'], output)
 
     def test_gregorian_daf_option_1750(self):
         """Test --output specifying Gregorian and Daf Yomi before 1752.
@@ -173,15 +154,12 @@ class TestNoConfigFile(TestCase):
         of Daf Yomi.
         """
         output = hbcal("hbcal -ic -o gregorian daf -fphonetics 17 8 1750")
-        self.assertEqual(1, len(output))
-        self.assertEqual('Friday 28 August 1750', output[0])
+        self.assertEqual(['Friday 28 August 1750'], output)
 
     def test_julian_daf_option_2015(self):
         """Test --output specifying Julian and Daf Yomi"""
         output = hbcal("hbcal -ic -o julian daf -fphonetics 17 8 2015")
-        self.assertEqual(2, len(output))
-        self.assertEqual('Monday 4 August 2015', output[0])
-        self.assertEqual('Nedarim 85', output[1])
+        self.assertEqual(['Monday 4 August 2015', 'Nedarim 85'], output)
 
     def test_julian_daf_option_1750(self):
         """Test --output specifying Julian and Daf Yomi before 1752.
@@ -190,23 +168,18 @@ class TestNoConfigFile(TestCase):
         of Daf Yomi.
         """
         output = hbcal("hbcal -ic -o julian daf -fphonetics 17 8 1750")
-        self.assertEqual(1, len(output))
-        self.assertEqual('Friday 17 August 1750', output[0])
+        self.assertEqual(['Friday 17 August 1750'], output)
 
     def test_hebrew_daf_option_5775(self):
         """Test --output specifying Hebrew and Daf Yomi."""
         output = hbcal("hbcal -ic -o hebrew daf -fphonetics 17 8 2015")
-        self.assertEqual(2, len(output))
-        self.assertEqual('Monday 2 Ellul 5775', output[0])
-        self.assertEqual('Nedarim 85', output[1])
+        self.assertEqual(['Monday 2 Ellul 5775', 'Nedarim 85'], output)
 
     def test_civil_hebrew_daf_option_2015(self):
         """Test --output specifying civil, Hebrew and Daf Yomi."""
         output = hbcal("hbcal -ic -o civil hebrew daf -fphonetics 17 8 2015")
-        self.assertEqual(3, len(output))
-        self.assertEqual('Monday 17 August 2015', output[0])
-        self.assertEqual('Monday 2 Ellul 5775', output[1])
-        self.assertEqual('Nedarim 85', output[2])
+        self.assertEqual(['Monday 17 August 2015', 'Monday 2 Ellul 5775',
+                          'Nedarim 85'], output)
 
     def test_civil_hebrew_daf_option_1750(self):
         """Test --output specifying civil, Hebrew and Daf Yomi before 1752.
@@ -215,18 +188,15 @@ class TestNoConfigFile(TestCase):
         of Daf Yomi.
         """
         output = hbcal("hbcal -ic -o civil hebrew daf -fphonetics 17 8 1750")
-        self.assertEqual(2, len(output))
-        self.assertEqual('Friday 17 August 1750', output[0])
-        self.assertEqual('Friday 26 Av 5510', output[1])
+        self.assertEqual(['Friday 17 August 1750', 'Friday 26 Av 5510'],
+                         output)
 
     def test_gregorian_hebrew_daf_option_2015(self):
         """Test --output specifying Gregorian, Hebrew and Daf Yomi."""
         output = hbcal("hbcal -ic -o gregorian hebrew daf -fphonetics" +
                        " 17 8 2015")
-        self.assertEqual(3, len(output))
-        self.assertEqual('Monday 17 August 2015', output[0])
-        self.assertEqual('Monday 2 Ellul 5775', output[1])
-        self.assertEqual('Nedarim 85', output[2])
+        self.assertEqual(['Monday 17 August 2015', 'Monday 2 Ellul 5775',
+                          'Nedarim 85'], output)
 
     def test_gregorian_hebrew_daf_option_1750(self):
         """Test --output specifying Gregorian, Hebrew and Daf Yomi before 1752.
@@ -236,17 +206,14 @@ class TestNoConfigFile(TestCase):
         """
         output = hbcal("hbcal -ic -o gregorian hebrew daf -fphonetics" +
                        " 17 8 1750")
-        self.assertEqual(2, len(output))
-        self.assertEqual('Friday 28 August 1750', output[0])
-        self.assertEqual('Friday 26 Av 5510', output[1])
+        self.assertEqual(['Friday 28 August 1750', 'Friday 26 Av 5510'],
+                         output)
 
     def test_julian_hebrew_daf_option_2015(self):
         """Test --output specifying Julian, Hebrew and Daf Yomi."""
         output = hbcal("hbcal -ic -o julian hebrew daf -fphonetics 17 8 2015")
-        self.assertEqual(3, len(output))
-        self.assertEqual('Monday 4 August 2015', output[0])
-        self.assertEqual('Monday 2 Ellul 5775', output[1])
-        self.assertEqual('Nedarim 85', output[2])
+        self.assertEqual(['Monday 4 August 2015', 'Monday 2 Ellul 5775',
+                          'Nedarim 85'], output)
 
     def test_julian_hebrew_daf_option_1750(self):
         """Test --output specifying Julian, Hebrew and Daf Yomi before 1752.
@@ -255,44 +222,38 @@ class TestNoConfigFile(TestCase):
         of Daf Yomi.
         """
         output = hbcal("hbcal -ic -o julian hebrew daf -fphonetics 17 8 1750")
-        self.assertEqual(2, len(output))
-        self.assertEqual('Friday 17 August 1750', output[0])
-        self.assertEqual('Friday 26 Av 5510', output[1])
+        self.assertEqual(['Friday 17 August 1750', 'Friday 26 Av 5510'],
+                         output)
 
     def test_long_option(self):
         """Test the long version of --output."""
         output = hbcal("hbcal -ic --output julian -fphonetics 17 8 2015")
-        self.assertEqual(1, len(output))
-        self.assertEqual('Monday 4 August 2015', output[0])
+        self.assertEqual(['Monday 4 August 2015'], output)
 
     def test_long_option_multiple_calendars(self):
         """Test use of one --output option (long) with 2 calendars"""
         output = hbcal("hbcal -ic --output julian hebrew -fphonetics" +
                        " 17 8 2015")
-        self.assertEqual(2, len(output))
-        self.assertEqual('Monday 4 August 2015', output[0])
-        self.assertEqual('Monday 2 Ellul 5775', output[1])
+        self.assertEqual(['Monday 4 August 2015', 'Monday 2 Ellul 5775'],
+                         output)
 
     def test_multiple_short_options(self):
         """Test double use of --output (short version)"""
         output = hbcal("hbcal -ic -o julian -o hebrew -fphonetics 17 8 2015")
-        self.assertEqual(2, len(output))
-        self.assertEqual('Monday 4 August 2015', output[0])
-        self.assertEqual('Monday 2 Ellul 5775', output[1])
+        self.assertEqual(['Monday 4 August 2015', 'Monday 2 Ellul 5775'],
+                         output)
 
     def test_multiple_long_options(self):
         """Test double use of --output (long version)"""
         output = hbcal("hbcal -ic --output julian --output hebrew" +
                        " -fphonetics 17 8 2015")
-        self.assertEqual(2, len(output))
-        self.assertEqual('Monday 4 August 2015', output[0])
-        self.assertEqual('Monday 2 Ellul 5775', output[1])
+        self.assertEqual(['Monday 4 August 2015', 'Monday 2 Ellul 5775'],
+                         output)
 
     def test_abbreviated_option(self):
         """Test use of an abbreviated value of --output option"""
         output = hbcal("hbcal -ic --output jul -fphonetics 17 8 2015")
-        self.assertEqual(1, len(output))
-        self.assertEqual('Monday 4 August 2015', output[0])
+        self.assertEqual(['Monday 4 August 2015'], output)
 
     def test_civil_gregorian_option(self):
         """Test --output specifying Civil and Gregorian calendars.
@@ -341,13 +302,11 @@ class TestCivilInConfigFile(TestNoConfigFile):
 
     def test_default_2015(self):
         output = hbcal("hbcal -ic -fphonetics 17 8 2015")
-        self.assertEqual(1, len(output))
-        self.assertEqual('Monday 17 August 2015', output[0])
+        self.assertEqual(['Monday 17 August 2015'], output)
 
     def test_default_1750(self):
         output = hbcal("hbcal -ic -fphonetics 17 8 1750")
-        self.assertEqual(1, len(output))
-        self.assertEqual('Friday 17 August 1750', output[0])
+        self.assertEqual(['Friday 17 August 1750'], output)
 
 
 class TestGregorianInConfigFile(TestCivilInConfigFile):
@@ -356,8 +315,7 @@ class TestGregorianInConfigFile(TestCivilInConfigFile):
 
     def test_default_1750(self):
         output = hbcal("hbcal -ic -fphonetics 17 8 1750")
-        self.assertEqual(1, len(output))
-        self.assertEqual('Friday 28 August 1750', output[0])
+        self.assertEqual(['Friday 28 August 1750'], output)
 
 
 class TestJulianInConfigFile(TestCivilInConfigFile):
@@ -367,8 +325,7 @@ class TestJulianInConfigFile(TestCivilInConfigFile):
 
     def test_default_2015(self):
         output = hbcal("hbcal -ic -fphonetics 17 8 2015")
-        self.assertEqual(1, len(output))
-        self.assertEqual('Monday 4 August 2015', output[0])
+        self.assertEqual(['Monday 4 August 2015'], output)
 
 
 class TestHebrewInConfigFile(TestNoConfigFile):
@@ -378,13 +335,11 @@ class TestHebrewInConfigFile(TestNoConfigFile):
 
     def test_default_2015(self):
         output = hbcal("hbcal -ic -fphonetics 17 8 2015")
-        self.assertEqual(1, len(output))
-        self.assertEqual('Monday 2 Ellul 5775', output[0])
+        self.assertEqual(['Monday 2 Ellul 5775'], output)
 
     def test_default_1750(self):
         output = hbcal("hbcal -ic -fphonetics 17 8 1750")
-        self.assertEqual(1, len(output))
-        self.assertEqual('Friday 26 Av 5510', output[0])
+        self.assertEqual(['Friday 26 Av 5510'], output)
 
 
 class TestDafInConfigFile(TestNoConfigFile):
@@ -394,8 +349,7 @@ class TestDafInConfigFile(TestNoConfigFile):
 
     def test_default_2015(self):
         output = hbcal("hbcal -ic -fphonetics 17 8 2015")
-        self.assertEqual(1, len(output))
-        self.assertEqual('Nedarim 85', output[0])
+        self.assertEqual(['Nedarim 85'], output)
 
     def test_default_1750(self):
         output = hbcal("hbcal -ic -fphonetics 17 8 1750")
@@ -419,9 +373,8 @@ class TestGregorianHebrewInConfigFile(TestNoConfigFile):
 
     def test_default_1750(self):
         output = hbcal("hbcal -ic -fphonetics 17 8 1750")
-        self.assertEqual(2, len(output))
-        self.assertEqual('Friday 28 August 1750', output[0])
-        self.assertEqual('Friday 26 Av 5510', output[1])
+        self.assertEqual(['Friday 28 August 1750', 'Friday 26 Av 5510'],
+                         output)
 
 
 class TestJulianHebrewInConfigFile(TestNoConfigFile):
@@ -431,9 +384,8 @@ class TestJulianHebrewInConfigFile(TestNoConfigFile):
 
     def test_default_2015(self):
         output = hbcal("hbcal -ic -fphonetics 17 8 2015")
-        self.assertEqual(2, len(output))
-        self.assertEqual('Monday 4 August 2015', output[0])
-        self.assertEqual('Monday 2 Ellul 5775', output[1])
+        self.assertEqual(['Monday 4 August 2015', 'Monday 2 Ellul 5775'],
+                         output)
 
 
 class TestCivilDafInConfigFile(TestNoConfigFile):
@@ -444,9 +396,7 @@ class TestCivilDafInConfigFile(TestNoConfigFile):
     def test_default_2015(self):
         """Test default value of --output parameter after 1752"""
         output = hbcal("hbcal -ic -fphonetics 17 8 2015")
-        self.assertEqual(2, len(output))
-        self.assertEqual('Monday 17 August 2015', output[0])
-        self.assertEqual('Nedarim 85', output[1])
+        self.assertEqual(['Monday 17 August 2015', 'Nedarim 85'], output)
 
     def test_default_1750(self):
         """Test default value of --output parameter before 1752.
@@ -455,8 +405,7 @@ class TestCivilDafInConfigFile(TestNoConfigFile):
         of Daf Yomi.
         """
         output = hbcal("hbcal -ic -fphonetics 17 8 1750")
-        self.assertEqual(1, len(output))
-        self.assertEqual('Friday 17 August 1750', output[0])
+        self.assertEqual(['Friday 17 August 1750'], output)
 
 
 class TestGregorianDafInConfigFile(TestNoConfigFile):
@@ -466,9 +415,7 @@ class TestGregorianDafInConfigFile(TestNoConfigFile):
     def test_default_2015(self):
         """Test default value of --output parameter after 1752"""
         output = hbcal("hbcal -ic -fphonetics 17 8 2015")
-        self.assertEqual(2, len(output))
-        self.assertEqual('Monday 17 August 2015', output[0])
-        self.assertEqual('Nedarim 85', output[1])
+        self.assertEqual(['Monday 17 August 2015', 'Nedarim 85'], output)
 
     def test_default_1750(self):
         """Test default value of --output parameter before 1752.
@@ -477,8 +424,7 @@ class TestGregorianDafInConfigFile(TestNoConfigFile):
         of Daf Yomi.
         """
         output = hbcal("hbcal -ic -fphonetics 17 8 1750")
-        self.assertEqual(1, len(output))
-        self.assertEqual('Friday 28 August 1750', output[0])
+        self.assertEqual(['Friday 28 August 1750'], output)
 
 
 class TestJulianDafInConfigFile(TestNoConfigFile):
@@ -488,9 +434,7 @@ class TestJulianDafInConfigFile(TestNoConfigFile):
 
     def test_default_2015(self):
         output = hbcal("hbcal -ic -fphonetics 17 8 2015")
-        self.assertEqual(2, len(output))
-        self.assertEqual('Monday 4 August 2015', output[0])
-        self.assertEqual('Nedarim 85', output[1])
+        self.assertEqual(['Monday 4 August 2015', 'Nedarim 85'], output)
 
     def test_default_1750(self):
         """Test default value of --output parameter before 1752.
@@ -499,8 +443,7 @@ class TestJulianDafInConfigFile(TestNoConfigFile):
         of Daf Yomi.
         """
         output = hbcal("hbcal -ic -fphonetics 17 8 1750")
-        self.assertEqual(1, len(output))
-        self.assertEqual('Friday 17 August 1750', output[0])
+        self.assertEqual(['Friday 17 August 1750'], output)
 
 
 class TestHebrewDafInConfigFile(TestNoConfigFile):
@@ -511,9 +454,7 @@ class TestHebrewDafInConfigFile(TestNoConfigFile):
     def test_default_2015(self):
         """Test default value of --output parameter after 1752"""
         output = hbcal("hbcal -ic -fphonetics 17 8 2015")
-        self.assertEqual(2, len(output))
-        self.assertEqual('Monday 2 Ellul 5775', output[0])
-        self.assertEqual('Nedarim 85', output[1])
+        self.assertEqual(['Monday 2 Ellul 5775', 'Nedarim 85'], output)
 
     def test_default_1750(self):
         """Test default value of --output parameter before 1752.
@@ -522,8 +463,7 @@ class TestHebrewDafInConfigFile(TestNoConfigFile):
         of Daf Yomi.
         """
         output = hbcal("hbcal -ic -fphonetics 17 8 1750")
-        self.assertEqual(1, len(output))
-        self.assertEqual('Friday 26 Av 5510', output[0])
+        self.assertEqual(['Friday 26 Av 5510'], output)
 
 
 class TestCivilHebrewDafInConfigFile(TestNoConfigFile):
@@ -533,10 +473,8 @@ class TestCivilHebrewDafInConfigFile(TestNoConfigFile):
 
     def test_default_2015(self):
         output = hbcal("hbcal -ic -fphonetics 17 8 2015")
-        self.assertEqual(3, len(output))
-        self.assertEqual('Monday 17 August 2015', output[0])
-        self.assertEqual('Monday 2 Ellul 5775', output[1])
-        self.assertEqual('Nedarim 85', output[2])
+        self.assertEqual(['Monday 17 August 2015', 'Monday 2 Ellul 5775',
+                          'Nedarim 85'], output)
 
     def test_default_1750(self):
         """Test default value of --output parameter before 1752.
@@ -545,9 +483,8 @@ class TestCivilHebrewDafInConfigFile(TestNoConfigFile):
         of Daf Yomi.
         """
         output = hbcal("hbcal -ic -fphonetics 17 8 1750")
-        self.assertEqual(2, len(output))
-        self.assertEqual('Friday 17 August 1750', output[0])
-        self.assertEqual('Friday 26 Av 5510', output[1])
+        self.assertEqual(['Friday 17 August 1750', 'Friday 26 Av 5510'],
+                         output)
 
 
 class TestGregorianHebrewDafInConfigFile(TestCivilHebrewDafInConfigFile):
@@ -561,9 +498,8 @@ class TestGregorianHebrewDafInConfigFile(TestCivilHebrewDafInConfigFile):
         of Daf Yomi.
         """
         output = hbcal("hbcal -ic -fphonetics 17 8 1750")
-        self.assertEqual(2, len(output))
-        self.assertEqual('Friday 28 August 1750', output[0])
-        self.assertEqual('Friday 26 Av 5510', output[1])
+        self.assertEqual(['Friday 28 August 1750', 'Friday 26 Av 5510'],
+                         output)
 
 
 class TestJulianHebrewDafInConfigFile(TestCivilHebrewDafInConfigFile):
@@ -573,10 +509,8 @@ class TestJulianHebrewDafInConfigFile(TestCivilHebrewDafInConfigFile):
 
     def test_default_2015(self):
         output = hbcal("hbcal -ic -fphonetics 17 8 2015")
-        self.assertEqual(3, len(output))
-        self.assertEqual('Monday 4 August 2015', output[0])
-        self.assertEqual('Monday 2 Ellul 5775', output[1])
-        self.assertEqual('Nedarim 85', output[2])
+        self.assertEqual(['Monday 4 August 2015', 'Monday 2 Ellul 5775',
+                          'Nedarim 85'], output)
 
 
 class TestOutputCalendarEmptyInConfigFile(TestNoConfigFile):
@@ -610,15 +544,13 @@ class TestAbbreviated(TestNoConfigFile):
 
     def test_default_2015(self):
         output = hbcal("hbcal -ic -fphonetics 17 8 2015")
-        self.assertEqual(2, len(output))
-        self.assertEqual('Monday 2 Ellul 5775', output[0])
-        self.assertEqual('Monday 4 August 2015', output[1])
+        self.assertEqual(['Monday 2 Ellul 5775', 'Monday 4 August 2015'],
+                         output)
 
     def test_default_1750(self):
         output = hbcal("hbcal -ic -fphonetics 17 8 1750")
-        self.assertEqual(2, len(output))
-        self.assertEqual('Friday 26 Av 5510', output[0])
-        self.assertEqual('Friday 17 August 1750', output[1])
+        self.assertEqual(['Friday 26 Av 5510', 'Friday 17 August 1750'],
+                         output)
 
 
 class TestInvalidValue(TestCase):

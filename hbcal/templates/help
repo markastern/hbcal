@@ -4,6 +4,12 @@ DATES
         is used. If only one value is provided, the current month and year
         are used. If no value is provided, the current date is used.
 
+        Alternatively, month may be specified as a name, which may be
+        specified in upper, lower or mixed case and may be shortened
+        (provided that this does not result in ambiguity). Hebrew months
+        and Talmudic tractates must be specified in Hebrew and must use
+        the spelling found here (see CALENDARS).
+
         Negative dates can be used to count back from the end of the month
         e.g. use date=-1 for the last day of the month. Similarly, negative
         months can be used for the last month of the year.
@@ -52,12 +58,17 @@ CALENDARS
 
         The above numbering complies with Exodus 12 v2, and also ensures that
         months have consistent numbers. However, the year starts with {Tishri:{fmt}}.
-        Month 13 is always accepted as valid, but is converted to {Adar Rishon:{fmt}}
-        in a year with 12 months. Similarly, the 30th of {Cheshvan:{fmt}}, which
-        sometimes has 29 days and sometimes has 30 days, is converted to the
-        1st of {Kislev:{fmt}} in a year in which {Cheshvan:{fmt}} has 29 days. The 30th of
-        {Kislev:{fmt}}, which sometimes has 29 days and sometimes has 30 days, is
-        converted to the 1st of {Teveth:{fmt}} in a year in which {Kislev:{fmt}} has 29 days.
+        {Adar Rishon:{fmt}} may be shortened to 2 or 3 letters for a year with 12
+        months but must be spelled in full (the geresh is not required) for a
+        year with 13 months (because otherwise it would be ambiguous).
+
+        When input as a number, month 13 is always accepted as valid, but is
+        converted to {Adar Rishon:{fmt}} in a year with 12 months. Similarly, the 30th
+        of {Cheshvan:{fmt}}, which sometimes has 29 days and sometimes has 30 days, is
+        converted to the 1st of {Kislev:{fmt}} in a year in which {Cheshvan:{fmt}} has 29 days.
+        The 30th of {Kislev:{fmt}}, which sometimes has 29 days and sometimes has 30
+        days, is converted to the 1st of {Teveth:{fmt}} in a year in which {Kislev:{fmt}} has
+        29 days.
 
         When used as the input calendar in conjunction with the current date,
         the date is assumed to start at 6pm local time.

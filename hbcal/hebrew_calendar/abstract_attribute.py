@@ -1,6 +1,7 @@
 # This file is based on a code recipe by Eric Snow and is licensed
 # under the MIT licence.
 
+
 class AbstractAttribute:
     """An abstract class attribute.
 
@@ -13,5 +14,6 @@ class AbstractAttribute:
 
     def __init__(self, doc=""):
         self.__doc__ = doc
+
     def __get__(self, obj, cls):
         return self
