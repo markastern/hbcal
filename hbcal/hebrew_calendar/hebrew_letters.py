@@ -33,7 +33,8 @@ HEBREW_LETTERS = {'ALEF': u"\u05D0", 'BET': u"\u05D1", 'GIMEL': u"\u05D2",
                   'FINAL_PE': u"\u05E3", 'PE': u"\u05E4",
                   'FINAL_TZADE': u"\u05E5", 'TZADE': u"\u05E6",
                   'QOF': u"\u05E7", 'RESH': u"\u05E8", 'SHIN': u"\u05E9",
-                  'TAV': u"\u05EA", 'GERESH': u"\u05F3"}
+                  'TAV': u"\u05EA", 'GERESH': u"\u05F3",
+                  'GERSHAYIM': u"\u05F4"}
 
 
 class HebrewString(unicode if PY2 else str):
@@ -50,17 +51,17 @@ class HebrewString(unicode if PY2 else str):
                 terminal emulators that output everything from left to right,
                 so it is necessary to output the text reversed for it to
                 appear correct.
-            'h': Output the string as HTML codes for unicode. This is intended
-                for use in web scripts.
+            '#h': Output the string as HTML codes for unicode. This is
+                intended for use in web scripts.
         :return: The formatted string.
         """
         hebrew_format = self.format(**HEBREW_LETTERS)
         if fmt == "#H":
-            return hebrew_format
+            return hebrew_format[:]
         elif fmt == "#R":
             return hebrew_format[::-1]
         elif fmt == "#h":
             return hebrew_format.encode('ascii',
                                         'xmlcharrefreplace').decode('ascii')
         else:
-            raise NotImplementedError
+            raise ValueError('Invalid format: ' + fmt)
