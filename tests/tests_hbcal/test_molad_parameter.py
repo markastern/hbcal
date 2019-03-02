@@ -147,6 +147,29 @@ class TestMiscellaneous(TestCase):
         self.assertEqual('Saturday 15 August 2015 04:23 and 8 parts',
                          output[0])
 
+    def test_hebrew_output(self):
+        """Test --molad option"""
+        output = hbcal("hbcal -ih -o hebrew --molad 1 2 5775")
+        self.assertEqual(u'\u05D9\u05D5\u05DD \u05E8\u05D0\u05E9\u05D5\u05DF '
+                         + u'30 \u05E0\u05D9\u05E1\u05DF 5775 07:27 \u05D54 '
+                         + u'\u05D7\u05DC\u05E7\u05D9\u05DD', output[0])
+
+    def test_reverse_hebrew_output(self):
+        """Test --molad option"""
+        output = hbcal("hbcal -ih -o hebrew -freverse --molad 1 2 5775")
+        self.assertEqual(u'\u05DD\u05D9\u05E7\u05DC\u05D7 4\u05D5 07:27 5775 '
+                         + u'\u05DF\u05E1\u05D9\u05E0 30 '
+                         + u'\u05DF\u05D5\u05E9\u05D0\u05E8 '
+                         + u'\u05DD\u05D5\u05D9', output[0])
+
+    def test_html_output(self):
+        """Test --molad option"""
+        output = hbcal("hbcal -ih -o hebrew -fhtml --molad 1 2 5775")
+        self.assertEqual('&#1497;&#1493;&#1501; '
+                         + '&#1512;&#1488;&#1513;&#1493;&#1503; 30 '
+                         + '&#1504;&#1497;&#1505;&#1503; 5775 07:27 &#1493;4 '
+                         + '&#1495;&#1500;&#1511;&#1497;&#1501;', output[0])
+
 
 if __name__ == "__main__":
     unittest.main()
