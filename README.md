@@ -47,6 +47,9 @@ Uses the Python 3 argument-less version of super.
 Fixed setup script so that enum34 is installed only for python < 3.4.
 
 ## Changes in version 0.10.0
-Month can now be specified as a word instead of a number
+Month can now be specified as a word instead of a number.
+
+## Changes in version 0.10.1
+Fixed html output when displaying time of molad.
 
 By Mark Stern (markalexstern@gmail.com)
