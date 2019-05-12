@@ -17,7 +17,7 @@
 # along with Hbcal.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import division
 import numbers
-from .hebrew_letters import HEBREW_LETTERS
+from .hebrew_letters import HebrewString
 
 CHALAKIM_IN_HOUR = 1080
 HOURS_IN_DAY = 24
@@ -25,7 +25,10 @@ DAYS_IN_WEEK = 7
 MINUTES_IN_HOUR = 60
 CHALAKIM_IN_MINUTE = CHALAKIM_IN_HOUR // MINUTES_IN_HOUR
 
-PARTS = u"{CHET}{LAMED}{QOF}{YOD}{FINAL_MEM}".format(**HEBREW_LETTERS)
+PARTS = HebrewString("{CHET}{LAMED}{QOF}{YOD}{FINAL_MEM}")
+ENG_TEMPLATE = "{HOURS_MINS} and {REST} parts"
+HEB_TEMPLATE = u"{HOURS_MINS} {VAV}{REST} {PARTS}"
+RVS_TEMPLATE = u"{PARTS} {REST}{VAV} {HOURS_MINS}"
 
 
 class RelTime(object):
@@ -119,17 +122,22 @@ class RelTime(object):
         minutes, chalakim = divmod(self.chalakim, CHALAKIM_IN_MINUTE)
         hours, minutes = divmod(minutes, MINUTES_IN_HOUR)
         hours = hours % HOURS_IN_DAY
-        result = "{0:0>2d}:{1:0>2d}".format(hours, minutes)
+        hours_mins = "{0:0>2d}:{1:0>2d}".format(hours, minutes)
         if option == "":
-            result += " and {} parts".format(chalakim)
-        elif option == "H":
-            result += u" {VAV}{0} {PARTS}".format(chalakim,
-                                                  PARTS=PARTS,
-                                                  **HEBREW_LETTERS)
-        elif option == "R":
-            result = u"{PARTS} {0}{VAV} ".format(chalakim,
-                                                 PARTS=PARTS[::-1],
-                                                 **HEBREW_LETTERS) + result
+            template = ENG_TEMPLATE
+            extras = {}
+        else:
+            if option in ('H', 'h'):
+                template = HEB_TEMPLATE
+            elif option == 'R':
+                template = RVS_TEMPLATE
+            extras = {
+                'PARTS': PARTS.__format__('#' + option),
+                'VAV': HebrewString(u"{VAV}").__format__('#' + option)
+            }
+
+        result = template.format(HOURS_MINS=hours_mins, REST=chalakim,
+                                 **extras)
         return result
 
     @property
@@ -240,22 +248,24 @@ class AbsTime(object):
         if fmt1 != 'hmp':
             return self.__repr__()
 
-        result = "{0:0>2d}:{1:0>2d}".format(self._hours,
-                                            self._chalakim //
-                                            CHALAKIM_IN_MINUTE)
+        hours_mins = "{0:0>2d}:{1:0>2d}".format(
+            self._hours, self._chalakim // CHALAKIM_IN_MINUTE)
         if option == "":
-            result += " and {} parts".format(self._chalakim %
-                                             CHALAKIM_IN_MINUTE)
-        elif option == "H":
-            result += u" {VAV}{0} {PARTS}".format(self._chalakim %
-                                                  CHALAKIM_IN_MINUTE,
-                                                  PARTS=PARTS,
-                                                  **HEBREW_LETTERS)
-        elif option == "R":
-            result = u"{PARTS} {0}{VAV} ".format(self._chalakim %
-                                                 CHALAKIM_IN_MINUTE,
-                                                 PARTS=PARTS[::-1],
-                                                 **HEBREW_LETTERS) + result
+            template = ENG_TEMPLATE
+            extras = {}
+        else:
+            if option in ('H', 'h'):
+                template = HEB_TEMPLATE
+            elif option == 'R':
+                template = RVS_TEMPLATE
+            extras = {
+                'PARTS': PARTS.__format__('#' + option),
+                'VAV': HebrewString(u"{VAV}").__format__('#' + option)
+            }
+
+        result = template.format(HOURS_MINS=hours_mins,
+                                 REST=self._chalakim % CHALAKIM_IN_MINUTE,
+                                 **extras)
         return result
 
     # Implement all the rich comparision operators.
