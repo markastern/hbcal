@@ -33,6 +33,7 @@ from . import abs_time
 from .abs_time import DAY
 from .weekday import DAYS_IN_WEEK, Weekday
 from .hebrew_letters import HebrewString
+from .gematria import to_letters
 from .date import MonthNotInRange, DateNotInRange, Month, RegularYear
 
 HEBREW_MONTH_NAMES = [
@@ -647,12 +648,24 @@ class HebrewYear(RegularYear):
         return month, date
 
     def format_date(self, month, date, fmt):
+        if fmt.startswith("#G"):
+            gematria = True
+            fmt = '#' + fmt[2:]
+        else:
+            gematria = False
         month_name = format(month, fmt)
         if self.months_in_year() == self.MONTHS_IN_SIMPLE_YEAR:
             month_name = month_name.split(" ",
                                           1)[::-1 if fmt == "#R" else 1][0]
+        if gematria:
+            date_part = HebrewString(to_letters(date)).__format__(fmt)
+            year_part = HebrewString(
+                to_letters(self.value % 1000)).__format__(fmt)
+        else:
+            date_part = date
+            year_part = self.value
         date_fmt = u"{y} {m} {d}" if fmt == "#R" else u"{d} {m} {y}"
-        return date_fmt.format(y=self.value, m=month_name, d=date)
+        return date_fmt.format(y=year_part, m=month_name, d=date_part)
 
     def molad(self, month=HebrewMonth.TISHRI):
         """Return the absolute time of the molad of the current month."""

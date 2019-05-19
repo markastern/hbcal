@@ -51,6 +51,7 @@ from hbcal.hebrew_calendar.civil_year import (GregorianYear, JulianYear,
 from hbcal.hebrew_calendar.hebrew_year import HebrewYear
 from hbcal.hebrew_calendar.hebrew_letters import HebrewString
 from hbcal.hebrew_calendar.abs_time import AbsTime
+from hbcal.hebrew_calendar.gematria import to_letters
 from hbcal.ordinal import ordinal_suffix
 from hbcal.version import __version__
 
@@ -326,6 +327,9 @@ def get_output_line(argv):
         output_class = CALENDAR_TYPES[output_type]
         output_data = FORMATS[args.format if output_type in ("hebrew", "daf")
                               else "phonetics"]
+        output_fmt = output_data['fmt']
+        if output_type in ("hebrew", "daf") and output_fmt:
+            output_fmt = '#' + 'G' + output_fmt[1]
         if output_type == "daf":
             try:
                 date = date_cache[output_class]
@@ -333,19 +337,19 @@ def get_output_line(argv):
                 # Just skip this output format
                 pass
             else:
-                yield DAF_FORMAT.format(date=date, **output_data)
+                yield DAF_FORMAT.format(date=date, fmt=output_fmt)
         else:
             if args.molad:
                 molad_datetime = DateTime(output_class, atime)
                 yield output_data['molad'].format(weekday=weekday,
                                                   date=molad_datetime.date,
                                                   time=molad_datetime.time,
-                                                  **output_data)
+                                                  fmt=output_fmt)
             else:
                 yield output_data['format'].\
                     format(weekday=weekday,
                            date=date_cache[output_class],
-                           **output_data)
+                           fmt=output_fmt)
 
     output_data = FORMATS[args.format]
     if args.sedrah:
@@ -359,7 +363,12 @@ def get_output_line(argv):
         omer = hebrew_date.year.omer_day(hebrew_date.month,
                                          hebrew_date.date)
         if omer is not None:
-            suffix = ordinal_suffix(omer) if output_data['fmt'] == '' else ''
+            output_fmt = output_data['fmt']
+            if output_fmt:
+                omer = HebrewString(to_letters(omer)).__format__(output_fmt)
+                suffix = ''
+            else:
+                suffix = ordinal_suffix(omer)
             yield output_data['omer'].format(count=omer,
                                              suffix=suffix,
                                              YOM=YOM,

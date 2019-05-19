@@ -26,6 +26,7 @@
 from enum import IntEnum
 
 from .hebrew_letters import HebrewString
+from .gematria import to_letters
 
 DAYS_IN_WEEK = 7
 YOM = HebrewString(u"{YOD}{VAV}{FINAL_MEM}")
@@ -54,5 +55,12 @@ class Weekday(IntEnum):
         return self._name_.title()
 
     def __format__(self, fmt):
-        return (self.__str__() if fmt == ""
-                else HebrewString(WEEKDAY_HEBREW_NAMES[self]).__format__(fmt))
+        if fmt == "":
+            return self.__str__()
+        if fmt.startswith("#G"):
+            fmt = '#' + fmt[2:]
+            gematria = self.value != self.SATURDAY
+        else:
+            gematria = False
+        return HebrewString(YOM + ' ' + to_letters(self.value + 1) if gematria
+                            else WEEKDAY_HEBREW_NAMES[self]).__format__(fmt)

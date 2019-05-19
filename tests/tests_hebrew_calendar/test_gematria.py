@@ -1,4 +1,4 @@
-"""Tests for ordinal_suffix function"""
+"""Tests for to_letters function"""
 
 # Copyright 2019 Mark Stern
 #
