@@ -18,6 +18,7 @@
 from __future__ import division
 import numbers
 from .hebrew_letters import HebrewString
+from .gematria import to_letters
 
 CHALAKIM_IN_HOUR = 1080
 HOURS_IN_DAY = 24
@@ -123,7 +124,20 @@ class RelTime(object):
         hours, minutes = divmod(minutes, MINUTES_IN_HOUR)
         hours = hours % HOURS_IN_DAY
         hours_mins = "{0:0>2d}:{1:0>2d}".format(hours, minutes)
-        if option == "":
+        if 'G' in option:
+            option = option.replace('G', '', 1)
+            # Vav messes up the gematria, so leave it out
+            vav = ''
+            if chalakim:
+                chalakim = HebrewString(
+                    to_letters(chalakim)).__format__('#' + option)
+        else:
+            if option in ('H', 'h', 'R'):
+                vav = HebrewString(u"{VAV}").__format__('#' + option)
+        if not chalakim:
+            template = u"{HOURS_MINS}"
+            extras = {}
+        elif option == "":
             template = ENG_TEMPLATE
             extras = {}
         else:
@@ -133,7 +147,7 @@ class RelTime(object):
                 template = RVS_TEMPLATE
             extras = {
                 'PARTS': PARTS.__format__('#' + option),
-                'VAV': HebrewString(u"{VAV}").__format__('#' + option)
+                'VAV': vav
             }
 
         result = template.format(HOURS_MINS=hours_mins, REST=chalakim,

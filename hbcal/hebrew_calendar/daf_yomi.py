@@ -21,6 +21,7 @@ from future.builtins import super
 
 from .abs_time import AbsTime, DAY
 from .hebrew_letters import HebrewString
+from .gematria import to_letters
 from .date import Month, Year, Date, DateBeforeCreation, BadDate
 
 
@@ -271,6 +272,11 @@ class DafYomiCycle(Year):
         return cls.MIN_DATE
 
     def format_date(self, tractate, page, fmt):
+        if fmt.startswith("#G"):
+            gematria = True
+            fmt = '#' + fmt[2:]
+        else:
+            gematria = False
         tractate_name = format(tractate, fmt).replace("_", " ")
         date_fmt = u"{page} {extra}{tractate}" if fmt == "#R" \
             else u"{tractate}{extra} {page}"
@@ -284,4 +290,7 @@ class DafYomiCycle(Year):
                              ")")[::index])
         else:
             extra = ""
-        return date_fmt.format(tractate=tractate_name, page=page, extra=extra)
+        page_part = HebrewString(
+            to_letters(page)).__format__(fmt) if gematria else page
+        return date_fmt.format(tractate=tractate_name,
+                               page=page_part, extra=extra)

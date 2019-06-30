@@ -40,46 +40,78 @@ class TestNoConfigFile(TestCase):
 
     def test_default(self):
         """Test default value of --format option."""
-        output = hbcal("hbcal -ih -o -s 1 8 5775")
-        self.assertEqual(u"\u05E0\u05D7", output[0])
+        output = hbcal("hbcal -ig -oh 3 8 2019")
+        self.assertEqual(u"\u05E9\u05D1\u05EA 2 \u05D0\u05D1 5779", output[0])
 
     def test_normal_option(self):
         """Test '--format normal' command line option."""
-        output = hbcal("hbcal -ih -o -s --format normal 1 8 5775")
-        self.assertEqual(u"\u05E0\u05D7", output[0])
+        output = hbcal("hbcal -ig --format normal -oh 3 8 2019")
+        self.assertEqual(u"\u05E9\u05D1\u05EA 2 \u05D0\u05D1 5779", output[0])
 
     def test_reverse_option(self):
         """Test '--format reverse' command line option."""
-        output = hbcal("hbcal -ih -o -s --format reverse 1 8 5775")
-        self.assertEqual(u"\u05D7\u05E0", output[0])
+        output = hbcal("hbcal -ig --format reverse -oh 3 8 2019")
+        self.assertEqual(u"5779 \u05D1\u05D0 2 \u05EA\u05D1\u05E9", output[0])
 
     def test_html_option(self):
         """Test '--format html' command line option."""
-        output = hbcal("hbcal -ih -o -s --format html 1 8 5775")
-        self.assertEqual('&#1504;&#1495;', output[0])
+        output = hbcal("hbcal -ig --format html -oh 3 8 2019")
+        self.assertEqual('&#1513;&#1489;&#1514; 2 &#1488;&#1489; 5779', output[0])
 
     def test_phonetics_option(self):
         """Test '--format phonetics' command line option."""
-        output = hbcal("hbcal -ih -o -s --format phonetics 1 8 5775")
-        self.assertEqual('Noach', output[0])
+        output = hbcal("hbcal -ig --format phonetics -oh 3 8 2019")
+        self.assertEqual('Saturday 2 Av 5779', output[0])
+
+    def test_gematria_option(self):
+        """Test '--format gematria' command line option."""
+        output = hbcal("hbcal -ig --format gematria -oh 3 8 2019")
+        self.assertEqual(u"\u05E9\u05D1\u05EA \u05D1\u05F3 \u05D0\u05D1 "
+                         + u"\u05EA\u05E9\u05E2\u05F4\u05D8", output[0])
+
+    def test_normal_gematria_options(self):
+        """Test '--format normal gematria' command line option."""
+        output = hbcal("hbcal -ig --format normal gematria -oh 3 8 2019")
+        self.assertEqual(u"\u05E9\u05D1\u05EA \u05D1\u05F3 \u05D0\u05D1 "
+                         + u"\u05EA\u05E9\u05E2\u05F4\u05D8", output[0])
+
+    def test_reverse_gematria_options(self):
+        """Test '--format reverse gematria' command line option."""
+        output = hbcal("hbcal -ig --format reverse gematria -oh 3 8 2019")
+        self.assertEqual(u"\u05D8\u05F4\u05E2\u05E9\u05EA \u05D1\u05D0 "
+                         + u"\u05F3\u05D1 \u05EA\u05D1\u05E9", output[0])
+
+    def test_html_gematria_options(self):
+        """Test '--format normal gematria' command line option."""
+        output = hbcal("hbcal -ig --format html gematria -oh 3 8 2019")
+        self.assertEqual('&#1513;&#1489;&#1514; &#1489;&#1523; &#1488;&#1489; '
+                         + '&#1514;&#1513;&#1506;&#1524;&#1496;', output[0])
+
+    def test_phonetics_gematria_options(self):
+        with self.assertRaises(SystemExit):
+            hbcal("hbcal -ig --format phonetics gematria -oh 3 8 2019")
+
+    def test_reverse_html_options(self):
+        with self.assertRaises(SystemExit):
+            hbcal("hbcal -ig --format reverse html -oh 3 8 2019")
 
     def test_short_option(self):
         """Test '-f' command line option."""
-        output = hbcal("hbcal -ih -o -s -fhtml 1 8 5775")
-        self.assertEqual('&#1504;&#1495;', output[0])
+        output = hbcal("hbcal -ig -fhtml -oh 3 8 2019")
+        self.assertEqual('&#1513;&#1489;&#1514; 2 &#1488;&#1489; 5779', output[0])
 
     def test_abbreviated_value(self):
         """Test '--format rev' in command line."""
-        output = hbcal("hbcal -ih -o -s --format rev 1 8 5775")
-        self.assertEqual(u"\u05D7\u05E0", output[0])
+        output = hbcal("hbcal -ig --format rev -oh 3 8 2019")
+        self.assertEqual(u"5779 \u05D1\u05D0 2 \u05EA\u05D1\u05E9", output[0])
 
     def test_short_option_abbreviated(self):
         """Test '-fp' in command line.
 
         This tests a short option with an abbreviated value.
         """
-        output = hbcal("hbcal -ih -o -s -fp 1 8 5775")
-        self.assertEqual('Noach', output[0])
+        output = hbcal("hbcal -ig -fp -oh 3 8 2019")
+        self.assertEqual('Saturday 2 Av 5779', output[0])
 
 
 class TestEmptyConfigFile(TestNoConfigFile):
@@ -106,8 +138,8 @@ class TestReverseInConfigFile(TestNoConfigFile):
     config_data = "format = reverse"
 
     def test_default(self):
-        output = hbcal("hbcal -ih -o -s 1 8 5775")
-        self.assertEqual(u"\u05D7\u05E0", output[0])
+        output = hbcal("hbcal -ig -oh 3 8 2019")
+        self.assertEqual(u"5779 \u05D1\u05D0 2 \u05EA\u05D1\u05E9", output[0])
 
 
 class TestHtmlInConfigFile(TestNoConfigFile):
@@ -116,8 +148,8 @@ class TestHtmlInConfigFile(TestNoConfigFile):
     config_data = "format = html"
 
     def test_default(self):
-        output = hbcal("hbcal -ih -o -s 1 8 5775")
-        self.assertEqual('&#1504;&#1495;', output[0])
+        output = hbcal("hbcal -ig -oh 3 8 2019")
+        self.assertEqual('&#1513;&#1489;&#1514; 2 &#1488;&#1489; 5779', output[0])
 
 
 class TestPhoneticsInConfigFile(TestNoConfigFile):
@@ -126,8 +158,76 @@ class TestPhoneticsInConfigFile(TestNoConfigFile):
     config_data = "format = phonetics"
 
     def test_default(self):
-        output = hbcal("hbcal -ih -o -s 1 8 5775")
-        self.assertEqual('Noach', output[0])
+        output = hbcal("hbcal -ig -oh 3 8 2019")
+        self.assertEqual('Saturday 2 Av 5779', output[0])
+
+
+class TestGematriaInConfigFile(TestNoConfigFile):
+    """Test 'format = gematria' in configuration file."""
+
+    config_data = "format = gematria"
+
+    def test_default(self):
+        output = hbcal("hbcal -ig -oh 3 8 2019")
+        self.assertEqual(u"\u05E9\u05D1\u05EA \u05D1\u05F3 \u05D0\u05D1 "
+                         + u"\u05EA\u05E9\u05E2\u05F4\u05D8", output[0])
+
+
+class TestNormalGematriaInConfigFile(TestNoConfigFile):
+    """Test 'format = normal gematria' in configuration file."""
+
+    config_data = "format = normal gematria"
+
+    def test_default(self):
+        output = hbcal("hbcal -ig -oh 3 8 2019")
+        self.assertEqual(u"\u05E9\u05D1\u05EA \u05D1\u05F3 \u05D0\u05D1 "
+                         + u"\u05EA\u05E9\u05E2\u05F4\u05D8", output[0])
+
+
+class TestReverseGematriaInConfigFile(TestNoConfigFile):
+    """Test 'format = reverse gematria' in configuration file."""
+
+    config_data = "format = reverse gematria"
+
+    def test_default(self):
+        output = hbcal("hbcal -ig -oh 3 8 2019")
+        self.assertEqual(u"\u05D8\u05F4\u05E2\u05E9\u05EA \u05D1\u05D0 "
+                         + u"\u05F3\u05D1 \u05EA\u05D1\u05E9", output[0])
+
+
+class TestHtmlGematriaInConfigFile(TestNoConfigFile):
+    """Test 'format = html' in configuration file."""
+
+    config_data = "format = html gematria"
+
+    def test_default(self):
+        output = hbcal("hbcal -ig -oh 3 8 2019")
+        self.assertEqual('&#1513;&#1489;&#1514; &#1489;&#1523; &#1488;&#1489; '
+                         + '&#1514;&#1513;&#1506;&#1524;&#1496;', output[0])
+
+
+class TestPhoneticsGematriaInConfigFile(TestCase):
+    """Test 'format = phonetics gematria' in configuration file."""
+
+    config_data = "format = phonetics gematria"
+
+    def test_default(self):
+        with self.assertRaises(ConfigurationParameterValueError) as cm_e:
+            hbcal('-ig -oh 3 8 2019')
+        self.assertEqual("Configuration parameter 'format' has invalid value "
+                         + "'phonetics gematria'", cm_e.exception.message)
+
+
+class TestReverseHtmlInConfigFile(TestCase):
+    """Test 'format = reverse html' in configuration file."""
+
+    config_data = "format = reverse html"
+
+    def test_default(self):
+        with self.assertRaises(ConfigurationParameterValueError) as cm_e:
+            hbcal('-ig -oh 3 8 2019')
+        self.assertEqual("Configuration parameter 'format' has invalid value "
+                         + "'reverse html'", cm_e.exception.message)
 
 
 class TestMixedCase(TestReverseInConfigFile):
@@ -142,15 +242,12 @@ class TestAbbreviated(TestReverseInConfigFile):
     config_data = "format = r"
 
 
-class TestAbbreviatedTooMuch(TestCase):
-    """Test "format =" (too abbreviated) in configuration file."""
+class TestFormatEmptyInConfigFile(TestNoConfigFile):
+    """Test "format =" with no value in the configuration file.
 
+    The default in this case is equivalent to 'normal'.
+    """
     config_data = "format ="
-
-    def test_default(self):
-        """Test default value of --format option."""
-        with self.assertRaises(ConfigurationParameterAmbiguousError):
-            hbcal("hbcal -ih -o -s 1 8 5775")
 
 
 class TestInvalidValue(TestCase):
@@ -160,15 +257,17 @@ class TestInvalidValue(TestCase):
 
     def test_default(self):
         """Test default value of --format option."""
-        with self.assertRaises(ConfigurationParameterValueError):
+        with self.assertRaises(ConfigurationParameterValueError) as cm_e:
             hbcal("hbcal -ih -o -s 1 8 5775")
+        self.assertEqual("Configuration parameter 'format' has invalid value "
+                         + "'hebrew'", cm_e.exception.message)
 
 
 class TestMiscellaneous(TestCase):
     """Miscellaneous output format tests"""
 
     def test_adar_reverse_option(self):
-        """ Tests a bug fix. Adar was coming out as 'Alef Geresh' """
+        """ Tests a bug fix. Adar was coming out as 'Adar Alef Geresh' """
         output = hbcal("hbcal -ih -oh -freverse 1 12 2")
         self.assertEqual(u"2 \u05E8\u05D3\u05D0 1 \u05D9\u05E0\u05E9 " +
                          u"\u05DD\u05D5\u05D9", output[0])

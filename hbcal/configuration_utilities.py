@@ -35,14 +35,21 @@ from .abbrev_set import AbbrevSet, AmbiguousKeyError
 
 class ConfigurationParameterException(Exception):
     """Exception class for errors in the configuration file."""
-    pass
+    def __init__(self, value, problem, name=None):
+        named_part = '' if name is None else "'{name}' ".format(name=name)
+        self.message = ("Configuration parameter {name}"
+                        + "has {problem} '{value}'").format(name=named_part,
+                                                            value=value,
+                                                            problem=problem)
+        super().__init__(name, value, problem)
 
 
 class ConfigurationParameterValueError(ConfigurationParameterException):
     """An exception class.
 
     Raised if a configuration parameter has an invalid value."""
-    pass
+    def __init__(self, name, value):
+        super().__init__(value, 'invalid value', name)
 
 
 class ConfigurationParameterDefaultError(ConfigurationParameterException):
@@ -50,7 +57,8 @@ class ConfigurationParameterDefaultError(ConfigurationParameterException):
 
     Raised if a configuration parameter is supplied with an invalid default
     value."""
-    pass
+    def __init__(self, value):
+        super().__init__(value, 'invalid default value')
 
 
 class ConfigurationParameterAmbiguousError(ConfigurationParameterException):
@@ -59,17 +67,26 @@ class ConfigurationParameterAmbiguousError(ConfigurationParameterException):
     Configuration parameters may be abbreviated. This exception is raised if a
     configuration parameter is supplied with a value that could be one of two
     or more possible allowed values."""
-    pass
+    def __init__(self, name, value):
+        super().__init__(value, 'ambiguous value', name)
 
 
 class DuplicateError(Exception):
     """Exception class.
 
     Raised when a mutually exclusive constraint would be violated."""
-    pass
+    def __init__(self, mutex_group):
+        self.mutex_group = mutex_group
+        super().__init__()
 
 
 class AllowedOnlySet(MutableSet):
+    """ A set with membership restrictions
+
+    Elements of the set must be from the allowed group.
+    Mutually exclusive groups may be specified, in which case the set may
+    contain at most one element from each mutually exclusive group.
+    """
     def __init__(self, iter=None, *args, **kwargs):
         for kwarg in ('allowed', 'mutex_groups'):
             if kwarg in kwargs:
@@ -99,7 +116,7 @@ class AllowedOnlySet(MutableSet):
                 if value in group:
                     for element in group:
                         if element != value and element in self:
-                            raise DuplicateError
+                            raise DuplicateError(group)
         super().add(value)
 
     def __repr__(self):
@@ -180,9 +197,9 @@ class ConfigurationParameter(with_metaclass(ABCMeta, object)):
             try:
                 self.value = value
             except AmbiguousKeyError:
-                raise ConfigurationParameterAmbiguousError
+                raise ConfigurationParameterAmbiguousError(name, value)
             except (KeyError, DuplicateError):
-                raise ConfigurationParameterValueError
+                raise ConfigurationParameterValueError(name, value)
 
     def __repr__(self):
         return '{name}({contents!r})'.format(
@@ -200,7 +217,7 @@ class SingleConfigurationParameter(ConfigurationParameter):
         try:
             self._value = self._allowed[default]
         except KeyError:
-            raise ConfigurationParameterDefaultError
+            raise ConfigurationParameterDefaultError(default)
 
     def _get_value(self):
         return set([self._value])
@@ -288,7 +305,14 @@ class StoreRestrictiveSet(argparse.Action):
                 mutex_groups=self.mutex_groups)
         setattr(namespace, self.dest, self.restrictive_set)
         for value in [self.allowed[x] for x in values]:
-            self.restrictive_set.add(value)
+            try:
+                self.restrictive_set.add(value)
+            except DuplicateError as error:
+                parser.error(("No more than one of {elements} may be "
+                              + "specified with {option}").format(
+                                  elements=', '.join(
+                                      x for x in error.mutex_group),
+                                  option=self.option_strings[-1]))
 
 
 class ArgumentParser(argparse.ArgumentParser):

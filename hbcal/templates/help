@@ -120,6 +120,12 @@ OUTPUT FORMATS FOR HEBREW
         Hebrew characters are output as HTML codes for UTF-8 characters from
         right to left. This is intended for use on web pages.
 
+    Gematria
+
+        Numbers are output as Hebrew letters (gematria). This option may
+        be specified in addition to Normal, Reverse or HTML. If Gematria
+        only is specified, Normal will be assumed (in addition).
+
 SEDRAH
 
         If the sedrah parameter is set, the current weekly sedrah is also
@@ -133,7 +139,9 @@ MOLAD
         If the molad parameter is set, the molad (mean lunar conjunction) for
         the hebrew month containing the input date is output according to all
         the calendars defined by the output calendar parameter. In this case,
-        the input date itself is not output.
+        the input date itself is not output. The time of the molad (hours,
+        minutes and seconds) will be output in Indo-Arabic numerals, even if
+        the Gematria option is specified.
 
 OMER
 
