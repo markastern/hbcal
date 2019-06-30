@@ -59,7 +59,7 @@ class Weekday(IntEnum):
             return self.__str__()
         if fmt.startswith("#G"):
             fmt = '#' + fmt[2:]
-            gematria = self.value != self.SATURDAY
+            gematria = self.value != Weekday.SATURDAY
         else:
             gematria = False
         return HebrewString(YOM + ' ' + to_letters(self.value + 1) if gematria

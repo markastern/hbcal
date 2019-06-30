@@ -35,13 +35,15 @@ except ImportError:
 import os.path as path
 from future.builtins import dict
 from future.utils import PY2
-from hbcal.configuration_utilities import (SingleConfigurationParameter,
-                                           MultiConfigurationParameter,
-                                           BinaryConfigurationParameter,
-                                           DuplicateError,
-                                           StoreRestrictiveSet,
-                                           add_negatable_option,
-                                           ArgumentParser)
+from hbcal.configuration_utilities import (
+    SingleConfigurationParameter,
+    MultiConfigurationParameter,
+    BinaryConfigurationParameter,
+    ConfigurationParameterValueError,
+    ConfigurationParameterAmbiguousError,
+    StoreRestrictiveSet,
+    add_negatable_option,
+    ArgumentParser)
 from hbcal.hebrew_calendar.date import Date, DateTime
 from hbcal.hebrew_calendar.daf_yomi import (DafYomiCycle, DateBeforeDafYomi,
                                             SubTractate)
@@ -98,7 +100,10 @@ def get_config():
         ('input calendar', SingleConfigurationParameter(CALENDAR_TYPES,
                                                         'civil')),
         ('dafbind', SingleConfigurationParameter(DAFBIND_TYPES, 'civil')),
-        ('format', SingleConfigurationParameter(FORMAT_TYPES, 'normal')),
+        ('format', MultiConfigurationParameter(FORMAT_TYPES + ['gematria'],
+                                               ['normal'],
+                                               (FORMAT_TYPES,
+                                                ('phonetics', 'gematria')))),
         ('output calendar', MultiConfigurationParameter(CALENDAR_TYPES.keys(),
                                                         ['civil', 'hebrew'],
                                                         (("julian",
@@ -155,14 +160,21 @@ def parse_arguments(args, parameters):
     fmt_parser = ArgumentParser(prog=prog_name,
                                 formatter_class=RawDescriptionHelpFormatter,
                                 add_help=False)
-    fmt_parser.add_argument("-f", "--format", nargs=1,
-                            action=StoreRestrictiveSet,
-                            choices=FORMAT_TYPES, type=str.lower,
-                            default=parameters['format'].value,
-                            help="format for output of hebrew")
+    group = fmt_parser.add_mutually_exclusive_group()
+    group.add_argument("-f", "--format", nargs='*',
+                       action=StoreRestrictiveSet,
+                       choices=FORMAT_TYPES + ['gematria'],
+                       mutex_groups=(FORMAT_TYPES, ('phonetics', 'gematria')),
+                       type=str.lower,
+                       default=parameters['format'].value,
+                       help="format for output of hebrew")
 
     fmt_args = fmt_parser.parse_known_args(args[1:])[0]
-    fmt = FORMATS[next(iter(fmt_args.format))]['fmt']
+    text_format = 'normal'
+    for format_arg in fmt_args.format:
+        if format_arg != 'gematria':
+            text_format = format_arg
+    fmt = FORMATS[text_format]['fmt']
     template_directory = path.join(path.dirname(path.realpath(__file__)),
                                    'templates')
     help_file = codecs.open(path.join(template_directory, 'help'),
@@ -225,12 +237,8 @@ Convert a date to one or more other calendars.""",
                         help="month of the year (integer)")
     parser.add_argument("year", nargs="?", action="store", type=int,
                         help="year (integer)")
-    try:
-        args = parser.parse_args(args[1:])
-    except DuplicateError:
-        parser.error("No more than one of 'gregorian', 'julian', 'civil' " +
-                     "may be specified as an output calendar")
-    for arg in ["input", "format", "dafbind"]:
+    args = parser.parse_args(args[1:])
+    for arg in ["input", "dafbind"]:
         setattr(args, arg, next(iter(getattr(args, arg))))
 
     return args, parser
@@ -301,6 +309,30 @@ def get_month_from_name(month_name, current_year):
     return month
 
 
+def format_sedrah_line(args, date_cache, output_data):
+    """ Return a string to output the current sedrah """
+    hebrew_date = date_cache[HebrewYear]
+    sedrah = hebrew_date.year.sedrah(hebrew_date.month,
+                                     hebrew_date.date,
+                                     args.israel)
+    return u"{sedrah:{fmt}}".format(sedrah=sedrah, **output_data)
+
+
+def format_omer(omer, output_data):
+    """ Return a string to output the day of the omer"""
+    output_fmt = output_data['fmt']
+    if output_fmt:
+        omer = HebrewString(to_letters(omer)).__format__(output_fmt)
+        suffix = ''
+    else:
+        suffix = ordinal_suffix(omer)
+    return output_data['omer'].format(count=omer,
+                                      suffix=suffix,
+                                      YOM=YOM,
+                                      BAOMER=BAOMER,
+                                      **output_data)
+
+
 def get_output_line(argv):
     """Generator that returns lines of output as unicode strings.
 
@@ -325,10 +357,16 @@ def get_output_line(argv):
 
     for output_type in args.output:
         output_class = CALENDAR_TYPES[output_type]
-        output_data = FORMATS[args.format if output_type in ("hebrew", "daf")
-                              else "phonetics"]
+        if output_type in ("hebrew", "daf"):
+            text_format = 'normal'
+            for format_arg in args.format:
+                if format_arg != 'gematria':
+                    text_format = format_arg
+        else:
+            text_format = "phonetics"
+        output_data = FORMATS[text_format]
         output_fmt = output_data['fmt']
-        if output_type in ("hebrew", "daf") and output_fmt:
+        if output_type in ("hebrew", "daf") and 'gematria' in args.format:
             output_fmt = '#' + 'G' + output_fmt[1]
         if output_type == "daf":
             try:
@@ -351,29 +389,19 @@ def get_output_line(argv):
                            date=date_cache[output_class],
                            fmt=output_fmt)
 
-    output_data = FORMATS[args.format]
+    text_format = 'normal'
+    for format_arg in args.format:
+        if format_arg != 'gematria':
+            text_format = format_arg
+    output_data = FORMATS[text_format]
     if args.sedrah:
-        hebrew_date = date_cache[HebrewYear]
-        sedrah = hebrew_date.year.sedrah(hebrew_date.month,
-                                         hebrew_date.date,
-                                         args.israel)
-        yield u"{sedrah:{fmt}}".format(sedrah=sedrah, **output_data)
+        yield format_sedrah_line(args, date_cache, output_data)
     if args.omer:
         hebrew_date = date_cache[HebrewYear]
         omer = hebrew_date.year.omer_day(hebrew_date.month,
                                          hebrew_date.date)
         if omer is not None:
-            output_fmt = output_data['fmt']
-            if output_fmt:
-                omer = HebrewString(to_letters(omer)).__format__(output_fmt)
-                suffix = ''
-            else:
-                suffix = ordinal_suffix(omer)
-            yield output_data['omer'].format(count=omer,
-                                             suffix=suffix,
-                                             YOM=YOM,
-                                             BAOMER=BAOMER,
-                                             **output_data)
+            yield format_omer(omer, output_data)
 
 
 def main(argv=None):
@@ -387,8 +415,13 @@ def main(argv=None):
     """
     if argv is None:
         argv = sys.argv
-    for output_line in get_output_line(argv):
-        print(output_line)
+    try:
+        for output_line in get_output_line(argv):
+            print(output_line)
+    except (ConfigurationParameterValueError,
+            ConfigurationParameterAmbiguousError) as ex:
+        print(ex.message, file=sys.stderr)
+        sys.exit(1)
 
 
 if __name__ == "__main__":
