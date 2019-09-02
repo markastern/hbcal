@@ -23,22 +23,23 @@
 # You should have received a copy of the GNU General Public License
 # along with Hbcal.  If not, see <http://www.gnu.org/licenses/>.
 
+import re
 from enum import IntEnum
 
-from .hebrew_letters import HebrewString
+from .hebrew_letters import HEBREW_LETTERS
 from .gematria import to_letters
 
 DAYS_IN_WEEK = 7
-YOM = HebrewString(u"{YOD}{VAV}{FINAL_MEM}")
+YOM = u"{YOD}{VAV}{FINAL_MEM}".format(**HEBREW_LETTERS)
 
 WEEKDAY_HEBREW_NAMES = [
-    YOM + u" {RESH}{ALEF}{SHIN}{VAV}{FINAL_NUN}",
-    YOM + u" {SHIN}{NUN}{YOD}",
-    YOM + u" {SHIN}{LAMED}{YOD}{SHIN}{YOD}",
-    YOM + u" {RESH}{BET}{YOD}{AYIN}{YOD}",
-    YOM + u" {CHET}{MEM}{YOD}{SHIN}{YOD}",
-    YOM + u" {SHIN}{YOD}{SHIN}{YOD}",
-    u"{SHIN}{BET}{TAV}"]
+    YOM + u" {RESH}{ALEF}{SHIN}{VAV}{FINAL_NUN}".format(**HEBREW_LETTERS),
+    YOM + u" {SHIN}{NUN}{YOD}".format(**HEBREW_LETTERS),
+    YOM + u" {SHIN}{LAMED}{YOD}{SHIN}{YOD}".format(**HEBREW_LETTERS),
+    YOM + u" {RESH}{BET}{YOD}{AYIN}{YOD}".format(**HEBREW_LETTERS),
+    YOM + u" {CHET}{MEM}{YOD}{SHIN}{YOD}".format(**HEBREW_LETTERS),
+    YOM + u" {SHIN}{YOD}{SHIN}{YOD}".format(**HEBREW_LETTERS),
+    u"{SHIN}{BET}{TAV}".format(**HEBREW_LETTERS)]
 
 
 class Weekday(IntEnum):
@@ -55,12 +56,11 @@ class Weekday(IntEnum):
         return self._name_.title()
 
     def __format__(self, fmt):
-        if fmt == "":
+        fmt1, sep, option = fmt.partition('#')
+        if option == "":
             return self.__str__()
-        if fmt.startswith("#G"):
-            fmt = '#' + fmt[2:]
-            gematria = self.value != Weekday.SATURDAY
-        else:
-            gematria = False
-        return HebrewString(YOM + ' ' + to_letters(self.value + 1) if gematria
-                            else WEEKDAY_HEBREW_NAMES[self]).__format__(fmt)
+        matched = re.match('%~A', fmt1)
+        if not matched or self.value == Weekday.SATURDAY:
+            return WEEKDAY_HEBREW_NAMES[self]
+        day = to_letters(self.value + 1)
+        return YOM + ' ' + day

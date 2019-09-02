@@ -17,7 +17,7 @@
 # along with Hbcal.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import division
 import numbers
-from .hebrew_letters import HebrewString
+from .hebrew_letters import HEBREW_LETTERS
 from .gematria import to_letters
 
 CHALAKIM_IN_HOUR = 1080
@@ -26,10 +26,9 @@ DAYS_IN_WEEK = 7
 MINUTES_IN_HOUR = 60
 CHALAKIM_IN_MINUTE = CHALAKIM_IN_HOUR // MINUTES_IN_HOUR
 
-PARTS = HebrewString("{CHET}{LAMED}{QOF}{YOD}{FINAL_MEM}")
+PARTS = u"{CHET}{LAMED}{QOF}{YOD}{FINAL_MEM}".format(**HEBREW_LETTERS)
 ENG_TEMPLATE = "{HOURS_MINS} and {REST} parts"
-HEB_TEMPLATE = u"{HOURS_MINS} {VAV}{REST} {PARTS}"
-RVS_TEMPLATE = u"{PARTS} {REST}{VAV} {HOURS_MINS}"
+HEB_TEMPLATE = u"{HOURS_MINS} {CONNECTOR}{REST} {PARTS}"
 
 
 class RelTime(object):
@@ -127,31 +126,21 @@ class RelTime(object):
         if 'G' in option:
             option = option.replace('G', '', 1)
             # Vav messes up the gematria, so leave it out
-            vav = ''
+            connector = ''
             if chalakim:
-                chalakim = HebrewString(
-                    to_letters(chalakim)).__format__('#' + option)
+                chalakim = to_letters(chalakim).format(**HEBREW_LETTERS)
         else:
-            if option in ('H', 'h', 'R'):
-                vav = HebrewString(u"{VAV}").__format__('#' + option)
+            connector = u"{VAV}".format(**HEBREW_LETTERS)
         if not chalakim:
             template = u"{HOURS_MINS}"
-            extras = {}
         elif option == "":
             template = ENG_TEMPLATE
-            extras = {}
         else:
-            if option in ('H', 'h'):
-                template = HEB_TEMPLATE
-            elif option == 'R':
-                template = RVS_TEMPLATE
-            extras = {
-                'PARTS': PARTS.__format__('#' + option),
-                'VAV': vav
-            }
+            template = HEB_TEMPLATE
 
         result = template.format(HOURS_MINS=hours_mins, REST=chalakim,
-                                 **extras)
+                                 PARTS=PARTS, CONNECTOR=connector,
+                                 **HEBREW_LETTERS)
         return result
 
     @property
@@ -266,20 +255,11 @@ class AbsTime(object):
             self._hours, self._chalakim // CHALAKIM_IN_MINUTE)
         if option == "":
             template = ENG_TEMPLATE
-            extras = {}
         else:
-            if option in ('H', 'h'):
-                template = HEB_TEMPLATE
-            elif option == 'R':
-                template = RVS_TEMPLATE
-            extras = {
-                'PARTS': PARTS.__format__('#' + option),
-                'VAV': HebrewString(u"{VAV}").__format__('#' + option)
-            }
-
+            template = HEB_TEMPLATE
         result = template.format(HOURS_MINS=hours_mins,
                                  REST=self._chalakim % CHALAKIM_IN_MINUTE,
-                                 **extras)
+                                 PARTS=PARTS, VAV=u"{VAV}", **HEBREW_LETTERS)
         return result
 
     # Implement all the rich comparision operators.

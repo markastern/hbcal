@@ -20,8 +20,7 @@ from enum import Enum
 from future.builtins import super
 
 from .abs_time import AbsTime, DAY
-from .hebrew_letters import HebrewString
-from .gematria import to_letters
+from .hebrew_letters import HEBREW_LETTERS
 from .date import Month, Year, Date, DateBeforeCreation, BadDate
 
 
@@ -64,6 +63,25 @@ HEBREW_TRACTATE_NAMES = [
     u"{KAF}{RESH}{YOD}{TAV}{VAV}{TAV}",
     u"{MEM}{AYIN}{YOD}{LAMED}{HE}",
     u"{NUN}{DALET}{HE}"]
+
+
+HEBREW_SUBTRACTATE_NAMES = [
+    None,
+    u"{QOF}{NUN}{YOD}{FINAL_MEM}",
+    u"{TAV}{MEM}{YOD}{DALET}",
+    u"{MEM}{DALET}{VAV}{TAV}"]
+
+
+class SubTractate(Enum):
+    """An enumeration class of parts of Meilah in the Talmud"""
+    KINNIM = 1
+    TAMID = 2
+    MIDDOS = 3
+
+    def __format__(self, fmt):
+        if fmt == "":
+            return self.name
+        return HEBREW_SUBTRACTATE_NAMES[self._value_].format(**HEBREW_LETTERS)
 
 
 class Tractate(Month):
@@ -109,7 +127,34 @@ class Tractate(Month):
     def __format__(self, fmt):
         if fmt == "":
             return self.name()
-        return HebrewString(HEBREW_TRACTATE_NAMES[self]).__format__(fmt)
+        return HEBREW_TRACTATE_NAMES[self].format(**HEBREW_LETTERS)
+
+    def format_month_name(self, fmt, cycle, page):
+        # Kinnim, Tamid and Middos appear on pages 22 to 37 of Meilah (in the
+        # standard Vilna edition).
+        MEILAH_PARTS = {22: (Tractate.MEILAH, SubTractate.KINNIM),
+                        23: (SubTractate.KINNIM,),
+                        24: (SubTractate.KINNIM,),
+                        25: (SubTractate.KINNIM, SubTractate.TAMID),
+                        26: (SubTractate.TAMID,),
+                        27: (SubTractate.TAMID,),
+                        28: (SubTractate.TAMID,),
+                        29: (SubTractate.TAMID,),
+                        30: (SubTractate.TAMID,),
+                        31: (SubTractate.TAMID,),
+                        32: (SubTractate.TAMID,),
+                        33: (SubTractate.TAMID,),
+                        34: (SubTractate.MIDDOS,),
+                        35: (SubTractate.MIDDOS,),
+                        36: (SubTractate.MIDDOS,),
+                        37: (SubTractate.MIDDOS,)}
+
+        tractate_name = format(self, fmt).replace("_", " ")
+
+        if self == Tractate.MEILAH and page in MEILAH_PARTS:
+            tractate_name += u" ({parts})".format(parts="/".join(
+                (format(x, fmt) for x in MEILAH_PARTS[page])))
+        return tractate_name
 
     @staticmethod
     def start_year_month():
@@ -118,26 +163,6 @@ class Tractate(Month):
     @staticmethod
     def end_year_month():
         return Tractate.NIDAH
-
-
-HEBREW_SUBTRACTATE_NAMES = [
-    None,
-    u"{QOF}{NUN}{YOD}{FINAL_MEM}",
-    u"{TAV}{MEM}{YOD}{DALET}",
-    u"{MEM}{DALET}{VAV}{TAV}"]
-
-
-class SubTractate(Enum):
-    """An enumeration class of parts of Meilah in the Talmud"""
-    KINNIM = 1
-    TAMID = 2
-    MIDDOS = 3
-
-    def __format__(self, fmt):
-        if fmt == "":
-            return self.name
-        return HebrewString(
-            HEBREW_SUBTRACTATE_NAMES[self._value_]).__format__(fmt)
 
 
 class DateBeforeDafYomi(BadDate):
@@ -270,27 +295,3 @@ class DafYomiCycle(Year):
         if cls.MIN_DATE is None:
             cls.MIN_DATE = Date(cls, cls.START_FIRST_YEAR)
         return cls.MIN_DATE
-
-    def format_date(self, tractate, page, fmt):
-        if fmt.startswith("#G"):
-            gematria = True
-            fmt = '#' + fmt[2:]
-        else:
-            gematria = False
-        tractate_name = format(tractate, fmt).replace("_", " ")
-        date_fmt = u"{page} {extra}{tractate}" if fmt == "#R" \
-            else u"{tractate}{extra} {page}"
-        if tractate == Tractate.MEILAH and page in self.MEILAH_PARTS:
-            index = -1 if fmt == "#R" else 1
-            extra = ''.join((' ',
-                             '(' +
-                             "/".join([format(x, fmt)
-                                       for x in self.MEILAH_PARTS[page]
-                                       [::index]]) +
-                             ")")[::index])
-        else:
-            extra = ""
-        page_part = HebrewString(
-            to_letters(page)).__format__(fmt) if gematria else page
-        return date_fmt.format(tractate=tractate_name,
-                               page=page_part, extra=extra)

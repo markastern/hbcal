@@ -32,8 +32,7 @@ from future.builtins import range, super
 from . import abs_time
 from .abs_time import DAY
 from .weekday import DAYS_IN_WEEK, Weekday
-from .hebrew_letters import HebrewString
-from .gematria import to_letters
+from .hebrew_letters import HEBREW_LETTERS
 from .date import MonthNotInRange, DateNotInRange, Month, RegularYear
 
 HEBREW_MONTH_NAMES = [
@@ -72,7 +71,13 @@ class HebrewMonth(Month):
     def __format__(self, fmt):
         if fmt == "":
             return self.name()
-        return HebrewString(HEBREW_MONTH_NAMES[self]).__format__(fmt)
+        return HEBREW_MONTH_NAMES[self].format(**HEBREW_LETTERS)
+
+    def format_month_name(self, fmt, year, date):
+        formatted = format(self, fmt)
+        if year.months_in_year() == year.MONTHS_IN_SIMPLE_YEAR:
+            formatted = formatted.split(" ", 1)[0]
+        return formatted
 
     @staticmethod
     def start_year_month():
@@ -219,7 +224,7 @@ class Sedrah(IntEnum):
         return (self.__str__().replace("_",
                                        "-" if self > Sedrah.VZOTH_HABERACHAH
                                        else " ") if fmt == ""
-                else HebrewString(HEBREW_SEDRAH_NAMES[self]).__format__(fmt))
+                else HEBREW_SEDRAH_NAMES[self]).format(**HEBREW_LETTERS)
 
 
 RH_SAT_TABLE = (Sedrah.HAAZINU,           # Rosh Hashonah
@@ -646,26 +651,6 @@ class HebrewYear(RegularYear):
             else:
                 raise
         return month, date
-
-    def format_date(self, month, date, fmt):
-        if fmt.startswith("#G"):
-            gematria = True
-            fmt = '#' + fmt[2:]
-        else:
-            gematria = False
-        month_name = format(month, fmt)
-        if self.months_in_year() == self.MONTHS_IN_SIMPLE_YEAR:
-            month_name = month_name.split(" ",
-                                          1)[::-1 if fmt == "#R" else 1][0]
-        if gematria:
-            date_part = HebrewString(to_letters(date)).__format__(fmt)
-            year_part = HebrewString(
-                to_letters(self.value % 1000)).__format__(fmt)
-        else:
-            date_part = date
-            year_part = self.value
-        date_fmt = u"{y} {m} {d}" if fmt == "#R" else u"{d} {m} {y}"
-        return date_fmt.format(y=year_part, m=month_name, d=date_part)
 
     def molad(self, month=HebrewMonth.TISHRI):
         """Return the absolute time of the molad of the current month."""

@@ -68,7 +68,9 @@ def install_requires():
     """Get the list of package requirements (python version specific)
     """
     requirements = ['future',
-                    'enum34; python_version < "3.4"']
+                    'enum34; python_version < "3.4"',
+                    'python-bidi',
+                    'cached-property']
     return requirements
 
 

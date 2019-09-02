@@ -23,9 +23,13 @@ import logging
 
 from future.builtins import range
 from future.utils import PY2, with_metaclass
+from cached_property import cached_property
 
 from .abs_time import RelTime, AbsTime, DAY
 from .abstract_attribute import AbstractAttribute
+from .gematria import to_letters
+from .hebrew_letters import HEBREW_LETTERS
+from .weekday import Weekday
 
 # Exception Classes
 
@@ -75,6 +79,9 @@ class Month(IntEnum):
 
     def __format__(self, fmt):
         return str(self)
+
+    def format_month_name(self, fmt, year, date):
+        return format(self, fmt)
 
     def __str__(self):
         return self.name()
@@ -144,6 +151,7 @@ class Date(object):
         difference -= other
         return difference
 
+    @cached_property
     def day_start(self):
         """Return the absolute time of the start of the current date."""
         return self.year.day_start(self.month, self.date)
@@ -155,7 +163,88 @@ class Date(object):
         return self.__format__("")
 
     def __format__(self, fmt):
-        return self.year.format_date(self.month, self.date, fmt)
+        # return self.year.format_date(self.month, self.date, fmt)
+        fmt1, sep, option = fmt.partition('#')
+        formatted, escape, flag = '', False, None
+        for char in fmt1:
+            if escape:
+                if char in self.escapes:
+                    formatted += self.escapes[char](self, sep + option,
+                                                    flag=flag)
+                    escape, flag = False, None
+                elif char in ('-', '_', '0', '~'):
+                    flag = char
+                else:
+                    formatted += '%'
+                    if flag:
+                        formatted += flag
+                    formatted += char
+            else:
+                if char == '%':
+                    escape = True
+                else:
+                    formatted += char
+        return formatted
+
+    def format_weekday(self, fmt, **kwargs):
+        fmt = "%{flag}A".format(
+            flag=kwargs['flag'] if kwargs['flag'] is not None else '') + fmt
+        return format(Weekday(self.day_start.days), fmt)
+
+    def format_month_name(self, fmt, **kwargs):
+        return self.month.format_month_name(fmt, self.year, self.date)
+
+    def format_day_of_month(self, fmt, **kwargs):
+        fmt = '02d'
+        if 'flag' in kwargs:
+            if kwargs['flag'] == '~':
+                return to_letters(self.date)
+            elif kwargs['flag'] == '-':
+                fmt = 'd'
+            elif kwargs['flag'] == '_':
+                fmt = '2d'
+        return format(self.date, fmt)
+
+    def format_short_year(self, fmt, **kwargs):
+        fmt = '02d'
+        if 'flag' in kwargs:
+            if kwargs['flag'] == '~':
+                return to_letters(self.year.value % 100)
+            elif kwargs['flag'] == '-':
+                fmt = 'd'
+            elif kwargs['flag'] == '_':
+                fmt = '2d'
+        return format(self.year.value % 100, fmt)
+
+    def format_medium_year(self, fmt, **kwargs):
+        fmt = '03d'
+        if 'flag' in kwargs:
+            if kwargs['flag'] == '~':
+                return to_letters(self.year.value % 1000)
+            elif kwargs['flag'] == '-':
+                fmt = 'd'
+            elif kwargs['flag'] == '_':
+                fmt = '3d'
+        return format(self.year.value % 1000, fmt)
+
+    def format_full_year(self, fmt, **kwargs):
+        fmt = '04d'
+        if 'flag' in kwargs:
+            if kwargs['flag'] == '~':
+                return to_letters(self.year.value)
+            elif kwargs['flag'] == '-':
+                fmt = 'd'
+            elif kwargs['flag'] == '_':
+                fmt = '4d'
+        return format(self.year.value, fmt)
+
+    escapes = {'A': format_weekday,
+               'B': format_month_name,
+               'D': format_day_of_month,
+               'y': format_short_year,
+               HEBREW_LETTERS['SHIN']: format_medium_year,
+               'Y': format_full_year
+               }
 
 
 LOG = logging.getLogger(__name__)

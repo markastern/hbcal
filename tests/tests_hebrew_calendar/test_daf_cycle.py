@@ -556,37 +556,37 @@ class TestDayStart(unittest.TestCase):
     def test_start_of_first_year(self):
         self.assertEqual(AbsTime(296475, 2, 6, 0),
                          date.Date(DafYomiCycle(1),
-                                   Tractate.BERACHOS, 2).day_start())
+                                   Tractate.BERACHOS, 2).day_start)
 
     def test_second_day(self):
         self.assertEqual(AbsTime(296475, 3, 6, 0),
                          date.Date(DafYomiCycle(1),
-                                   Tractate.BERACHOS, 3).day_start())
+                                   Tractate.BERACHOS, 3).day_start)
 
     def test_last_day_berachos(self):
         self.assertEqual(AbsTime(296484, 1, 6, 0),
                          date.Date(DafYomiCycle(1),
-                                   Tractate.BERACHOS, 64).day_start())
+                                   Tractate.BERACHOS, 64).day_start)
 
     def test_first_day_shabbos(self):
         self.assertEqual(AbsTime(296484, 2, 6, 0),
                          date.Date(DafYomiCycle(1),
-                                   Tractate.SHABBOS, 2).day_start())
+                                   Tractate.SHABBOS, 2).day_start)
 
     def test_last_day_nidah(self):
         self.assertEqual(AbsTime(296861, 1, 6, 0),
                          date.Date(DafYomiCycle(1),
-                                   Tractate.NIDAH, 73).day_start())
+                                   Tractate.NIDAH, 73).day_start)
 
     def test_first_day_second_cycle(self):
         self.assertEqual(AbsTime(296861, 2, 6, 0),
                          date.Date(DafYomiCycle(2),
-                                   Tractate.BERACHOS, 2).day_start())
+                                   Tractate.BERACHOS, 2).day_start)
 
     def test_first_day_recent_cycle(self):
         self.assertEqual(AbsTime(301501, 0, 6, 0),
                          date.Date(DafYomiCycle(14),
-                                   Tractate.BERACHOS, 2).day_start())
+                                   Tractate.BERACHOS, 2).day_start)
 
 
 if __name__ == '__main__':
