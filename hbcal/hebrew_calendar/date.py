@@ -163,7 +163,6 @@ class Date(object):
         return self.__format__("")
 
     def __format__(self, fmt):
-        # return self.year.format_date(self.month, self.date, fmt)
         fmt1, sep, option = fmt.partition('#')
         formatted, escape, flag = '', False, None
         for char in fmt1:
@@ -464,6 +463,7 @@ class Year(with_metaclass(ABCMeta, object)):
 
     @classmethod
     def min_date(cls):
+
         """Calculate the minimum date for this class.
 
         We only need to do it once per class."""
@@ -552,3 +552,90 @@ class DateTime(object):
         days, remainder = remainder.days_chalakim
         self.date += days
         self.time = RelTime(0, 0, 0, remainder)
+
+    def __format__(self, fmt):
+        fmt1, sep, option = fmt.partition('#')
+        formatted, escape, flag = '', False, None
+        for char in fmt1:
+            if escape:
+                if char in self.escapes:
+                    formatted += self.escapes[char](self, sep + option,
+                                                    flag=flag)
+                    escape, flag = False, None
+                elif char in ('-', '_', '0', '~'):
+                    flag = char
+                else:
+                    formatted += '%'
+                    if flag:
+                        formatted += flag
+                    formatted += char
+            else:
+                if char == '%':
+                    escape = True
+                else:
+                    formatted += char
+        return formatted
+
+    def format_weekday(self, fmt, **kwargs):
+        return self.date.format_weekday(fmt, **kwargs)
+
+    def format_month_name(self, fmt, **kwargs):
+        return self.date.format_month_name(fmt, **kwargs)
+
+    def format_day_of_month(self, fmt, **kwargs):
+        return self.date.format_day_of_month(fmt, **kwargs)
+
+    def format_short_year(self, fmt, **kwargs):
+        return self.date.format_short_year(fmt, **kwargs)
+
+    def format_medium_year(self, fmt, **kwargs):
+        return self.date.format_medium_year(fmt, **kwargs)
+
+    def format_full_year(self, fmt, **kwargs):
+        return self.date.format_full_year(fmt, **kwargs)
+
+    def format_hours(self, fmt, **kwargs):
+        fmt = '02d'
+        if 'flag' in kwargs:
+            if kwargs['flag'] == '~':
+                return to_letters(self.time.hours)
+            elif kwargs['flag'] == '-':
+                fmt = 'd'
+            elif kwargs['flag'] == '_':
+                fmt = '2d'
+        return format(self.time.hours, fmt)
+
+    def format_minutes(self, fmt, **kwargs):
+        fmt = '02d'
+        if 'flag' in kwargs:
+            if kwargs['flag'] == '~':
+                return to_letters(self.time.minutes)
+            elif kwargs['flag'] == '-':
+                fmt = 'd'
+            elif kwargs['flag'] == '_':
+                fmt = '2d'
+        return format(self.time.minutes, fmt)
+
+    def format_chalakim(self, fmt, **kwargs):
+        fmt = 'd'
+        if 'flag' in kwargs:
+            if kwargs['flag'] == '~':
+                return to_letters(self.time.parts)
+            elif kwargs['flag'] == '-':
+                fmt = 'd'
+            elif kwargs['flag'] == '_':
+                fmt = '2d'
+            elif kwargs['flag'] == '0':
+                fmt = '02d'
+        return format(self.time.parts, fmt)
+
+    escapes = {'A': format_weekday,
+               'B': format_month_name,
+               'D': format_day_of_month,
+               'H': format_hours,
+               'M': format_minutes,
+               'P': format_chalakim,
+               'y': format_short_year,
+               HEBREW_LETTERS['SHIN']: format_medium_year,
+               'Y': format_full_year
+               }

@@ -19,10 +19,10 @@ from __future__ import division
 import numbers
 from .hebrew_letters import HEBREW_LETTERS
 from .gematria import to_letters
+from .weekday import DAYS_IN_WEEK
 
 CHALAKIM_IN_HOUR = 1080
 HOURS_IN_DAY = 24
-DAYS_IN_WEEK = 7
 MINUTES_IN_HOUR = 60
 CHALAKIM_IN_MINUTE = CHALAKIM_IN_HOUR // MINUTES_IN_HOUR
 
@@ -158,6 +158,20 @@ class RelTime(object):
     def days_chalakim(self):
         """Returns a tuple comprising days and leftover chalakim."""
         return divmod(self.chalakim, HOURS_IN_DAY * CHALAKIM_IN_HOUR)
+
+    @property
+    def hours(self):
+        total_hours = self.chalakim // CHALAKIM_IN_HOUR
+        return total_hours % HOURS_IN_DAY
+
+    @property
+    def minutes(self):
+        total_minutes = self.chalakim // CHALAKIM_IN_MINUTE
+        return total_minutes % MINUTES_IN_HOUR
+
+    @property
+    def parts(self):
+        return self.chalakim % CHALAKIM_IN_MINUTE
 
 
 DAY = RelTime(0, 1)
