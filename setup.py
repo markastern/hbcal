@@ -69,6 +69,7 @@ def install_requires():
     """
     requirements = ['future',
                     'enum34; python_version < "3.4"',
+                    'functools32; python_version < "3.0"',
                     'python-bidi',
                     'cached-property']
     return requirements

@@ -34,6 +34,10 @@ except ImportError:
     from ConfigParser import RawConfigParser
 import os.path as path
 from itertools import chain
+try:
+    from functools import lru_cache
+except ImportError:
+    from functools32 import lru_cache
 from bidi.algorithm import get_display
 from future.builtins import dict
 from future.utils import PY2
@@ -54,7 +58,7 @@ from hbcal.hebrew_calendar.civil_year import (GregorianYear, JulianYear,
                                               BritishYear)
 from hbcal.hebrew_calendar.hebrew_year import HebrewYear
 from hbcal.hebrew_calendar.hebrew_letters import HEBREW_LETTERS
-from hbcal.hebrew_calendar.abs_time import AbsTime
+from hbcal.hebrew_calendar.abs_time import RelTime
 from hbcal.hebrew_calendar.gematria import to_letters
 from hbcal.ordinal import ordinal_suffix
 from hbcal.version import __version__
@@ -236,43 +240,32 @@ Convert a date to one or more other calendars.""",
     return args, parser
 
 
-class DateCache(object):
-    """Stores a dictionary of equivalent dates in different calendars."""
-
-    def __init__(self, date):
-        self.dates = {date.year.__class__: date}
-        self.atime = date.day_start
-        # We want the start of a civil day, so set the hours.
-        self.atime = AbsTime(self.atime.weeks, self.atime.days, 6, 0)
-
-    def __getitem__(self, item):
-        if item in self.dates:
-            return self.dates[item]
-        new_date = Date(item, self.atime)  # Store it for future use
-        self.dates[item] = new_date
-        return new_date
+@lru_cache()
+def get_date_time(atime, date_class):
+    """ Gets a datetime from an abs_time and caches it """
+    return DateTime(date_class, atime)
 
 
-def input_date(args, input_class):
-    """Extracts the input date from the command line parameters."""
+def input_time(args):
+    """ Extracts an abs_time from input parameters """
 
     if args.year is None:
         # Use the current date (with supplied date and month if any)
         current_datetime = datetime.now()
         # If Hebrew specified, add six hours
-        if input_class == HebrewYear or \
-                (input_class == DafYomiCycle and args.dafbind == "hebrew"):
+        if (args.input == 'hebrew'
+                or (args.input == 'daf' and args.dafbind == "hebrew")):
             current_datetime += timedelta(hours=6)
         current_date = Date(GregorianYear(current_datetime.year),
                             current_datetime.month, current_datetime.day)
         if args.date is not None:
-            if input_class not in (GregorianYear, BritishYear):
+            if args.input not in ('gregorian', 'civil'):
                 # Convert it before modifying it
                 atime = current_date.day_start
-                current_date = Date(input_class, atime)
+                current_date = Date(CALENDAR_TYPES[args.input], atime)
         current_year = current_date.year
     else:
-        current_year = input_class(args.year)
+        current_year = CALENDAR_TYPES[args.input](args.year)
     if args.month is None:
         month = current_date.month
     else:
@@ -281,8 +274,18 @@ def input_date(args, input_class):
         except ValueError:
             month = get_month_from_name(args.month.capitalize(),
                                         current_year)
-    return Date(current_year, month,
-                args.date if args.date is not None else current_date.date)
+    input_date = Date(current_year, month,
+                      current_date.date if args.date is None else args.date)
+    atime = input_date.day_start
+    if args.molad:
+        hebrew_date = get_date_time(atime, HebrewYear)
+        atime = hebrew_date.date.year.molad(hebrew_date.date.month)
+    else:
+        if (input_date.year.__class__ == HebrewYear
+                or (input_date.year.__class__ == DafYomiCycle
+                    and args.dafbind == "hebrew")):
+            atime += RelTime(0, hours=6)
+    return atime
 
 
 def get_month_from_name(month_name, current_year):
@@ -312,22 +315,6 @@ def reformat(line, formatting_options):
     return reformatted
 
 
-def format_omer(omer, fmt):
-    """ Return a string to output the day of the omer"""
-    fmt1, _, option = fmt.partition('#')
-    if option == 'H':
-        if fmt1 == '~':
-            omer = to_letters(omer).format(**HEBREW_LETTERS)
-        result = HEBREW_OMER_FORMAT.format(count=omer,
-                                           YOM=YOM,
-                                           BAOMER=BAOMER)
-    else:
-        suffix = ordinal_suffix(omer)
-        result = ENGLISH_OMER_FORMAT.format(count=omer,
-                                            suffix=suffix)
-    return result
-
-
 def get_output_line(argv):
     """Generator that returns lines of output as unicode strings.
 
@@ -338,14 +325,9 @@ def get_output_line(argv):
     """
     args, parser = parse_arguments(argv, get_config())
     try:
-        date_cache = DateCache(input_date(args, CALENDAR_TYPES[args.input]))
+        atime = input_time(args)
     except ValueError:
         parser.error("Invalid date")
-
-    if args.molad:
-        hebrew_date = date_cache[HebrewYear]
-        # Now get the time of the molad
-        atime = hebrew_date.year.molad(hebrew_date.month)
 
     output_classes = CALENDAR_TYPES.copy()
     output_classes['sedrah'] = HebrewYear
@@ -378,17 +360,17 @@ def get_output_line(argv):
             params['qualifier'] = '-'
             params['year_code'] = 'Y'
         try:
+            value = get_date_time(atime, output_classes[output_type])
             if args.molad:
-                value = DateTime(output_class, atime)
                 template = MOLAD_FORMAT
             else:
-                value = date_cache[output_class]
                 if output_type == 'sedrah':
-                    params['sedrah'] = value.year.sedrah(value.month,
-                                                         value.date,
-                                                         args.israel)
+                    params['sedrah'] = value.date.year.sedrah(value.date.month,
+                                                              value.date.date,
+                                                              args.israel)
                 elif output_type == 'omer':
-                    omer = value.year.omer_day(value.month, value.date)
+                    omer = value.date.year.omer_day(value.date.month,
+                                                    value.date.date)
                     if omer is None:
                         continue
                     params['suffix'] = ordinal_suffix(omer)
