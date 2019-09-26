@@ -63,9 +63,11 @@ from hbcal.hebrew_calendar.gematria import to_letters
 from hbcal.ordinal import ordinal_suffix
 from hbcal.version import __version__
 
-CALENDAR_TYPES = {"civil": BritishYear, "gregorian": GregorianYear,
+OUTPUT_CLASSES = {"civil": BritishYear, "gregorian": GregorianYear,
                   "hebrew": HebrewYear, "julian": JulianYear,
-                  "daf": DafYomiCycle, }
+                  "daf": DafYomiCycle, "sedrah": HebrewYear,
+                  "omer": HebrewYear}
+CALENDAR_TYPES = frozenset(('civil', 'gregorian', 'hebrew', 'julian', 'daf'))
 DAFBIND_TYPES = [x for x in CALENDAR_TYPES if x != "daf"]
 BASE_FORMAT = u'%{qualifier}A %{qualifier}D %B %{qualifier}{year_code}'
 DATE_FORMAT = BASE_FORMAT + '{fmt}'
@@ -102,7 +104,7 @@ def get_config():
                                                (('normal', 'reverse',
                                                  'phonetics', 'html'),
                                                 ('phonetics', 'gematria')))),
-        ('output calendar', MultiConfigurationParameter(CALENDAR_TYPES.keys(),
+        ('output calendar', MultiConfigurationParameter(CALENDAR_TYPES,
                                                         ['civil', 'hebrew'],
                                                         (("julian",
                                                           "gregorian",
@@ -262,10 +264,10 @@ def input_time(args):
             if args.input not in ('gregorian', 'civil'):
                 # Convert it before modifying it
                 atime = current_date.day_start
-                current_date = Date(CALENDAR_TYPES[args.input], atime)
+                current_date = Date(OUTPUT_CLASSES[args.input], atime)
         current_year = current_date.year
     else:
-        current_year = CALENDAR_TYPES[args.input](args.year)
+        current_year = OUTPUT_CLASSES[args.input](args.year)
     if args.month is None:
         month = current_date.month
     else:
@@ -329,13 +331,10 @@ def get_output_line(argv):
     except ValueError:
         parser.error("Invalid date")
 
-    output_classes = CALENDAR_TYPES.copy()
-    output_classes['sedrah'] = HebrewYear
-    output_classes['omer'] = HebrewYear
     for output_type in chain(args.output,
                              [x for x in ['sedrah', 'omer']
                               if getattr(args, x)]):
-        output_class = output_classes[output_type]
+        output_class = OUTPUT_CLASSES[output_type]
         if (output_class in (HebrewYear, DafYomiCycle)
                 and 'phonetics' not in args.format):
             template = HEBREW_TEMPLATES[output_type]
@@ -360,7 +359,7 @@ def get_output_line(argv):
             params['qualifier'] = '-'
             params['year_code'] = 'Y'
         try:
-            value = get_date_time(atime, output_classes[output_type])
+            value = get_date_time(atime, OUTPUT_CLASSES[output_type])
             if args.molad:
                 template = MOLAD_FORMAT
             else:

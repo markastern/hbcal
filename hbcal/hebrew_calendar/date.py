@@ -21,7 +21,7 @@ from abc import ABCMeta, abstractmethod
 from enum import IntEnum
 import logging
 
-from future.builtins import range
+from future.builtins import range, super
 from future.utils import PY2, with_metaclass
 from cached_property import cached_property
 
@@ -30,28 +30,25 @@ from .abstract_attribute import AbstractAttribute
 from .gematria import to_letters
 from .hebrew_letters import HEBREW_LETTERS
 from .weekday import Weekday
+from .format_percent_string import FormatPercentString
 
 # Exception Classes
 
 
 class BadDate(ValueError):
     """An exception class for an invalid Date"""
-    pass
 
 
 class DateBeforeCreation(BadDate):
     """An exception class for a date before the creation of the world"""
-    pass
 
 
 class MonthNotInRange(BadDate):
     """An exception class for a date whose month is out of range"""
-    pass
 
 
 class DateNotInRange(BadDate):
     """An exception class for a date whose date (in month) is out of range"""
-    pass
 
 
 class Month(IntEnum):
@@ -87,11 +84,13 @@ class Month(IntEnum):
         return self.name()
 
 
-class Date(object):
+class Date(FormatPercentString):
     """A date class for different calendar types.
 
     The year attribute is an instance of class Year and determines the
     calendar type."""
+
+    FLAGS = frozenset(FormatPercentString.FLAGS | {'~'})
 
     def __init__(self, year, month, date=None):
         if isinstance(month, AbsTime):
@@ -162,28 +161,11 @@ class Date(object):
     def __str__(self):
         return self.__format__("")
 
-    def __format__(self, fmt):
-        fmt1, sep, option = fmt.partition('#')
-        formatted, escape, flag = '', False, None
-        for char in fmt1:
-            if escape:
-                if char in self.escapes:
-                    formatted += self.escapes[char](self, sep + option,
-                                                    flag=flag)
-                    escape, flag = False, None
-                elif char in ('-', '_', '0', '~'):
-                    flag = char
-                else:
-                    formatted += '%'
-                    if flag:
-                        formatted += flag
-                    formatted += char
-            else:
-                if char == '%':
-                    escape = True
-                else:
-                    formatted += char
-        return formatted
+    def format_number(self, value, places, **kwargs):
+        if 'flag' in kwargs:
+            if kwargs['flag'] == '~':
+                return to_letters(value)
+        return super().format_number(value, places, **kwargs)
 
     def format_weekday(self, fmt, **kwargs):
         fmt = "%{flag}A".format(
@@ -194,56 +176,25 @@ class Date(object):
         return self.month.format_month_name(fmt, self.year, self.date)
 
     def format_day_of_month(self, fmt, **kwargs):
-        fmt = '02d'
-        if 'flag' in kwargs:
-            if kwargs['flag'] == '~':
-                return to_letters(self.date)
-            elif kwargs['flag'] == '-':
-                fmt = 'd'
-            elif kwargs['flag'] == '_':
-                fmt = '2d'
-        return format(self.date, fmt)
+        return self.format_number(self.date, 2, **kwargs)
 
     def format_short_year(self, fmt, **kwargs):
-        fmt = '02d'
-        if 'flag' in kwargs:
-            if kwargs['flag'] == '~':
-                return to_letters(self.year.value % 100)
-            elif kwargs['flag'] == '-':
-                fmt = 'd'
-            elif kwargs['flag'] == '_':
-                fmt = '2d'
-        return format(self.year.value % 100, fmt)
+        return self.format_number(self.year.value % 100, 2, **kwargs)
 
     def format_medium_year(self, fmt, **kwargs):
-        fmt = '03d'
-        if 'flag' in kwargs:
-            if kwargs['flag'] == '~':
-                return to_letters(self.year.value % 1000)
-            elif kwargs['flag'] == '-':
-                fmt = 'd'
-            elif kwargs['flag'] == '_':
-                fmt = '3d'
-        return format(self.year.value % 1000, fmt)
+        return self.format_number(self.year.value % 1000, 3, **kwargs)
 
     def format_full_year(self, fmt, **kwargs):
-        fmt = '04d'
-        if 'flag' in kwargs:
-            if kwargs['flag'] == '~':
-                return to_letters(self.year.value)
-            elif kwargs['flag'] == '-':
-                fmt = 'd'
-            elif kwargs['flag'] == '_':
-                fmt = '4d'
-        return format(self.year.value, fmt)
+        return self.format_number(self.year.value, 4, **kwargs)
 
-    escapes = {'A': format_weekday,
-               'B': format_month_name,
-               'D': format_day_of_month,
-               'y': format_short_year,
-               HEBREW_LETTERS['SHIN']: format_medium_year,
-               'Y': format_full_year
-               }
+    ESCAPES = {
+        'A': format_weekday,
+        'B': format_month_name,
+        'D': format_day_of_month,
+        'y': format_short_year,
+        HEBREW_LETTERS['SHIN']: format_medium_year,
+        'Y': format_full_year
+    }
 
 
 LOG = logging.getLogger(__name__)
@@ -534,14 +485,16 @@ class RegularYear(Year):
         return year, atime - year.start
 
 
-class DateTime(object):
+class DateTime(FormatPercentString):
     """A class comprising a Date object and a RelTime object.
 
     The object represents an instant in time. It comprises a Date object and
     a RelTime object (the latter should comprise only hours and chalakim)."""
 
+    FLAGS = frozenset(FormatPercentString.FLAGS | {'~'})
+
     def __init__(self, cls, atime):
-        """ Construct a DatTime object
+        """ Construct a DateTime object
 
         :param cls: A subclass of Year
         :param atime: An AbsTime object (a point in time)
@@ -552,29 +505,13 @@ class DateTime(object):
         days, remainder = remainder.days_chalakim
         self.date += days
         self.time = RelTime(0, 0, 0, remainder)
+        self.date.day_start = atime - self.time
 
-    def __format__(self, fmt):
-        fmt1, sep, option = fmt.partition('#')
-        formatted, escape, flag = '', False, None
-        for char in fmt1:
-            if escape:
-                if char in self.escapes:
-                    formatted += self.escapes[char](self, sep + option,
-                                                    flag=flag)
-                    escape, flag = False, None
-                elif char in ('-', '_', '0', '~'):
-                    flag = char
-                else:
-                    formatted += '%'
-                    if flag:
-                        formatted += flag
-                    formatted += char
-            else:
-                if char == '%':
-                    escape = True
-                else:
-                    formatted += char
-        return formatted
+    def format_number(self, value, places, **kwargs):
+        if 'flag' in kwargs:
+            if kwargs['flag'] == '~':
+                return to_letters(value)
+        return super().format_number(value, places, **kwargs)
 
     def format_weekday(self, fmt, **kwargs):
         return self.date.format_weekday(fmt, **kwargs)
@@ -595,47 +532,22 @@ class DateTime(object):
         return self.date.format_full_year(fmt, **kwargs)
 
     def format_hours(self, fmt, **kwargs):
-        fmt = '02d'
-        if 'flag' in kwargs:
-            if kwargs['flag'] == '~':
-                return to_letters(self.time.hours)
-            elif kwargs['flag'] == '-':
-                fmt = 'd'
-            elif kwargs['flag'] == '_':
-                fmt = '2d'
-        return format(self.time.hours, fmt)
+        return self.format_number(self.time.hours, 2, **kwargs)
 
     def format_minutes(self, fmt, **kwargs):
-        fmt = '02d'
-        if 'flag' in kwargs:
-            if kwargs['flag'] == '~':
-                return to_letters(self.time.minutes)
-            elif kwargs['flag'] == '-':
-                fmt = 'd'
-            elif kwargs['flag'] == '_':
-                fmt = '2d'
-        return format(self.time.minutes, fmt)
+        return self.format_number(self.time.minutes, 2, **kwargs)
 
     def format_chalakim(self, fmt, **kwargs):
-        fmt = 'd'
-        if 'flag' in kwargs:
-            if kwargs['flag'] == '~':
-                return to_letters(self.time.parts)
-            elif kwargs['flag'] == '-':
-                fmt = 'd'
-            elif kwargs['flag'] == '_':
-                fmt = '2d'
-            elif kwargs['flag'] == '0':
-                fmt = '02d'
-        return format(self.time.parts, fmt)
+        return self.format_number(self.time.parts, 2, **kwargs)
 
-    escapes = {'A': format_weekday,
-               'B': format_month_name,
-               'D': format_day_of_month,
-               'H': format_hours,
-               'M': format_minutes,
-               'P': format_chalakim,
-               'y': format_short_year,
-               HEBREW_LETTERS['SHIN']: format_medium_year,
-               'Y': format_full_year
-               }
+    ESCAPES = {
+        'A': format_weekday,
+        'B': format_month_name,
+        'D': format_day_of_month,
+        'H': format_hours,
+        'M': format_minutes,
+        'P': format_chalakim,
+        'y': format_short_year,
+        HEBREW_LETTERS['SHIN']: format_medium_year,
+        'Y': format_full_year
+    }

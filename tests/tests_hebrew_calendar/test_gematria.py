@@ -164,6 +164,68 @@ class TestToLetters(unittest.TestCase):
     def test_nine_hundred_and_one(self):
         self.assertEqual(u"\u05EA\u05EA\u05E7\u05F4\u05D0", to_letters(901))
 
+    def test_one_thousand(self):
+        """ Aleph geresh would be ambiguous, so do it the long way """
+        self.assertEqual(u"\u05EA\u05EA\u05F4\u05E8", to_letters(1000))
+
+    def test_one_thousand_and_one(self):
+        self.assertEqual(u"\u05D0\u05F3\u05D0\u05F3", to_letters(1001))
+
+    def test_one_thousand_and_eleven(self):
+        self.assertEqual(u"\u05D0\u05F3\u05D9\u05F4\u05D0", to_letters(1011))
+
+    def test_one_thousand_and_fifteen(self):
+        self.assertEqual(u"\u05D0\u05F3\u05D8\u05F4\u05D5", to_letters(1015))
+
+    def test_two_thousand(self):
+        self.assertEqual(u"\u05D0\u05F3\u05EA\u05EA\u05F4\u05E8",
+                         to_letters(2000))
+
+    def test_ten_thousand(self):
+        self.assertEqual(u"\u05D8\u05F3\u05EA\u05EA\u05F4\u05E8",
+                         to_letters(10000))
+
+    def test_eleven_thousand(self):
+        self.assertEqual(u"\u05D9\u05F4\u05D0\u05F3", to_letters(11000))
+
+    def test_eleven_thousand_and_one(self):
+        self.assertEqual(u"\u05D9\u05F4\u05D0\u05F3\u05D0\u05F3",
+                         to_letters(11001))
+
+    def test_four_hundred_thousand(self):
+        self.assertEqual(
+            u"\u05E9\u05E6\u05F4\u05D8\u05F3\u05EA\u05EA\u05F4\u05E8",
+            to_letters(400000))
+
+    def test_four_hundred_thousand_and_one(self):
+        self.assertEqual(u"\u05EA\u05F3\u05D0\u05F3", to_letters(400001))
+
+    def test_one_million(self):
+        self.assertEqual(u"\u05D0\u05F3\u05F3", to_letters(1000000))
+
+    def test_one_million_and_one(self):
+        self.assertEqual(u"\u05D0\u05F3\u05F3\u05D0\u05F3",
+                         to_letters(1000001))
+
+    def test_one_million_and_eleven(self):
+        self.assertEqual(u"\u05D0\u05F3\u05F3\u05D9\u05F4\u05D0",
+                         to_letters(1000011))
+
+    def test_one_million_and_fifteen(self):
+        self.assertEqual(u"\u05D0\u05F3\u05F3\u05D8\u05F4\u05D5",
+                         to_letters(1000015))
+
+    def test_one_million_one_thousand(self):
+        self.assertEqual(u"\u05D0\u05F3\u05EA\u05EA\u05F4\u05E8",
+                         to_letters(1001000))
+
+    def test_one_million_one_thousand_and_one(self):
+        self.assertEqual(u"\u05D0\u05F3\u05D0\u05F3\u05D0\u05F3",
+                         to_letters(1001001))
+
+    def test_ten_million(self):
+        self.assertEqual(u"\u05D9\u05F3\u05F3", to_letters(10000000))
+
     def test_zero(self):
         with self.assertRaises(ValueError):
             to_letters(0)

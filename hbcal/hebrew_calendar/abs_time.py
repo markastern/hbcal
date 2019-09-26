@@ -137,7 +137,9 @@ class RelTime(object):
 
     @property
     def minutes(self):
-        """Returns number of minutes (excluding complete weeks, days and hours)."""
+        """Returns number of minutes
+
+        Complete weeks, days and hours are excluded."""
         total_minutes = self.chalakim // CHALAKIM_IN_MINUTE
         return total_minutes % MINUTES_IN_HOUR
 
