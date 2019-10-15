@@ -34,6 +34,8 @@ from .abs_time import DAY
 from .weekday import DAYS_IN_WEEK, Weekday
 from .hebrew_letters import HEBREW_LETTERS
 from .date import MonthNotInRange, DateNotInRange, Month, RegularYear
+from .gematria import to_letters
+from .format_percent_string import UnknownFlagError
 
 HEBREW_MONTH_NAMES = [
     None,
@@ -69,7 +71,8 @@ class HebrewMonth(Month):
     ADAR_SHENI = 13
 
     def __format__(self, fmt):
-        if fmt == "":
+        _, _, option = fmt.partition('#')
+        if option == "":
             return self.name()
         return HEBREW_MONTH_NAMES[self].format(**HEBREW_LETTERS)
 
@@ -507,7 +510,6 @@ SIX_HOURS = abs_time.RelTime(0, 0, 6)
 
 class BadYearType(ValueError):
     """An exception class for an invalid Year Type"""
-    pass
 
 
 class YearType(IntEnum):
@@ -740,6 +742,21 @@ class HebrewYear(RegularYear):
                 cls.MONTHS_IN_SIMPLE_YEAR +
                 cls.LEAP_YEARS_IN_CYCLE * cls.MONTHS_IN_LEAP_YEAR) *\
             LUNAR_CYCLE
+
+    class GematriaFlag(object):
+        """ A dummy class used to add '~' to the allowed flags. """
+        escapes = {"~": None}
+
+    SUBFORMATTERS = ('GematriaFlag',)
+
+    @classmethod
+    def format_number(cls, value, places, fmt):
+        try:
+            return super().format_number(value, places, fmt, True)
+        except UnknownFlagError as exception:
+            if exception.flag == '~':
+                return to_letters(value)
+            raise exception
 
     def sedrah(self, month, date, israel):
         """Returns the sedrah for the month and date in the current year.

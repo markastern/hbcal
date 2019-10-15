@@ -79,7 +79,8 @@ class SubTractate(Enum):
     MIDDOS = 3
 
     def __format__(self, fmt):
-        if fmt == "":
+        _, _, option = fmt.partition('#')
+        if option == "":
             return self.name
         return HEBREW_SUBTRACTATE_NAMES[self._value_].format(**HEBREW_LETTERS)
 
@@ -125,7 +126,8 @@ class Tractate(Month):
     NIDAH = 37
 
     def __format__(self, fmt):
-        if fmt == "":
+        _, _, option = fmt.partition('#')
+        if option == "":
             return self.name()
         return HEBREW_TRACTATE_NAMES[self].format(**HEBREW_LETTERS)
 

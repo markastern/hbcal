@@ -21,13 +21,12 @@ from abc import ABCMeta, abstractmethod
 from enum import IntEnum
 import logging
 
-from future.builtins import range, super
+from future.builtins import range
 from future.utils import PY2, with_metaclass
 from cached_property import cached_property
 
 from .abs_time import RelTime, AbsTime, DAY
 from .abstract_attribute import AbstractAttribute
-from .gematria import to_letters
 from .hebrew_letters import HEBREW_LETTERS
 from .weekday import Weekday
 from .format_percent_string import FormatPercentString
@@ -90,7 +89,7 @@ class Date(FormatPercentString):
     The year attribute is an instance of class Year and determines the
     calendar type."""
 
-    FLAGS = frozenset(FormatPercentString.FLAGS | {'~'})
+    SUBFORMATTERS = ('year',)
 
     def __init__(self, year, month, date=None):
         if isinstance(month, AbsTime):
@@ -161,46 +160,29 @@ class Date(FormatPercentString):
     def __str__(self):
         return self.__format__("")
 
-    def format_number(self, value, places, **kwargs):
-        if 'flag' in kwargs:
-            if kwargs['flag'] == '~':
-                return to_letters(value)
-        return super().format_number(value, places, **kwargs)
+    def format_year(self, fmt):
+        return format(self.year, fmt)
 
-    def format_weekday(self, fmt, **kwargs):
-        fmt = "%{flag}A".format(
-            flag=kwargs['flag'] if kwargs['flag'] is not None else '') + fmt
+    def format_weekday(self, fmt):
         return format(Weekday(self.day_start.days), fmt)
 
     def format_month_name(self, fmt, **kwargs):
         return self.month.format_month_name(fmt, self.year, self.date)
 
-    def format_day_of_month(self, fmt, **kwargs):
-        return self.format_number(self.date, 2, **kwargs)
-
-    def format_short_year(self, fmt, **kwargs):
-        return self.format_number(self.year.value % 100, 2, **kwargs)
-
-    def format_medium_year(self, fmt, **kwargs):
-        return self.format_number(self.year.value % 1000, 3, **kwargs)
-
-    def format_full_year(self, fmt, **kwargs):
-        return self.format_number(self.year.value, 4, **kwargs)
+    def format_day_of_month(self, fmt):
+        return self.year.format_number(self.date, 2, fmt)
 
     ESCAPES = {
-        'A': format_weekday,
-        'B': format_month_name,
-        'D': format_day_of_month,
-        'y': format_short_year,
-        HEBREW_LETTERS['SHIN']: format_medium_year,
-        'Y': format_full_year
+        'A': 'format_weekday',
+        'B': 'format_month_name',
+        'D': 'format_day_of_month'
     }
 
 
 LOG = logging.getLogger(__name__)
 
 
-class Year(with_metaclass(ABCMeta, object)):
+class Year(with_metaclass(ABCMeta, FormatPercentString)):
     """Abstract base class for defining the year of different calendar types"""
 
     MIN_DATE = None
@@ -404,13 +386,14 @@ class Year(with_metaclass(ABCMeta, object)):
         """
         raise NotImplementedError
 
-    def format_date(self, month, date, fmt):
-        """Returns a formatted unicode string for output of date.
+    def format_short_year(self, fmt):
+        return self.format_number(self.value % 100, 2, fmt)
 
-        By default, fmt is ignored. Sub-classes may act differently."""
+    def format_medium_year(self, fmt):
+        return self.format_number(self.value % 1000, 3, fmt)
 
-        del fmt
-        return u"{0} {1} {2}".format(date, month.name(), self._value)
+    def format_full_year(self, fmt, **kwargs):
+        return self.format_number(self.value, 4, fmt)
 
     @classmethod
     def min_date(cls):
@@ -421,6 +404,15 @@ class Year(with_metaclass(ABCMeta, object)):
         if cls.MIN_DATE is None:
             cls.MIN_DATE = Date(cls, AbsTime(0, 0, 6))
         return cls.MIN_DATE
+
+    ESCAPES = {
+        'y': 'format_short_year',
+        HEBREW_LETTERS['SHIN']: 'format_medium_year',
+        'Y': 'format_full_year',
+        '_': None,
+        '-': None,
+        '0': None
+    }
 
 
 class RegularYear(Year):
@@ -491,7 +483,7 @@ class DateTime(FormatPercentString):
     The object represents an instant in time. It comprises a Date object and
     a RelTime object (the latter should comprise only hours and chalakim)."""
 
-    FLAGS = frozenset(FormatPercentString.FLAGS | {'~'})
+    SUBFORMATTERS = ('date', )
 
     def __init__(self, cls, atime):
         """ Construct a DateTime object
@@ -507,47 +499,20 @@ class DateTime(FormatPercentString):
         self.time = RelTime(0, 0, 0, remainder)
         self.date.day_start = atime - self.time
 
-    def format_number(self, value, places, **kwargs):
-        if 'flag' in kwargs:
-            if kwargs['flag'] == '~':
-                return to_letters(value)
-        return super().format_number(value, places, **kwargs)
+    def format_date(self, fmt):
+        return format(self.date, fmt)
 
-    def format_weekday(self, fmt, **kwargs):
-        return self.date.format_weekday(fmt, **kwargs)
+    def format_hours(self, fmt):
+        return self.date.year.format_number(self.time.hours, 2, fmt)
 
-    def format_month_name(self, fmt, **kwargs):
-        return self.date.format_month_name(fmt, **kwargs)
+    def format_minutes(self, fmt):
+        return self.date.year.format_number(self.time.minutes, 2, fmt)
 
-    def format_day_of_month(self, fmt, **kwargs):
-        return self.date.format_day_of_month(fmt, **kwargs)
-
-    def format_short_year(self, fmt, **kwargs):
-        return self.date.format_short_year(fmt, **kwargs)
-
-    def format_medium_year(self, fmt, **kwargs):
-        return self.date.format_medium_year(fmt, **kwargs)
-
-    def format_full_year(self, fmt, **kwargs):
-        return self.date.format_full_year(fmt, **kwargs)
-
-    def format_hours(self, fmt, **kwargs):
-        return self.format_number(self.time.hours, 2, **kwargs)
-
-    def format_minutes(self, fmt, **kwargs):
-        return self.format_number(self.time.minutes, 2, **kwargs)
-
-    def format_chalakim(self, fmt, **kwargs):
-        return self.format_number(self.time.parts, 2, **kwargs)
+    def format_chalakim(self, fmt):
+        return self.date.year.format_number(self.time.parts, 2, fmt)
 
     ESCAPES = {
-        'A': format_weekday,
-        'B': format_month_name,
-        'D': format_day_of_month,
-        'H': format_hours,
-        'M': format_minutes,
-        'P': format_chalakim,
-        'y': format_short_year,
-        HEBREW_LETTERS['SHIN']: format_medium_year,
-        'Y': format_full_year
+        'H': 'format_hours',
+        'M': 'format_minutes',
+        'P': 'format_chalakim'
     }
