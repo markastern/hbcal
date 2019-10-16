@@ -27,7 +27,6 @@ from cached_property import cached_property
 
 from .abs_time import RelTime, AbsTime, DAY
 from .abstract_attribute import AbstractAttribute
-from .hebrew_letters import HEBREW_LETTERS
 from .weekday import Weekday
 from .format_percent_string import FormatPercentString
 
@@ -407,7 +406,6 @@ class Year(with_metaclass(ABCMeta, FormatPercentString)):
 
     ESCAPES = {
         'y': 'format_short_year',
-        HEBREW_LETTERS['SHIN']: 'format_medium_year',
         'Y': 'format_full_year',
         '_': None,
         '-': None,

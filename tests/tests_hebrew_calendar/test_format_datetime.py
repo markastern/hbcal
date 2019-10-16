@@ -20,8 +20,8 @@ import sys
 from hbcal.hebrew_calendar.abs_time import AbsTime
 from hbcal.hebrew_calendar.date import DateTime
 
-from hbcal.hebrew_calendar.hebrew_year import HebrewYear, HebrewMonth
-from hbcal.hebrew_calendar.civil_year import GregorianYear, CivilMonth
+from hbcal.hebrew_calendar.hebrew_year import HebrewYear
+from hbcal.hebrew_calendar.civil_year import GregorianYear
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 
@@ -36,7 +36,6 @@ class TestFormatDateTime(unittest.TestCase):
         self.assertEqual(format(DateTime(HebrewYear,
                                          AbsTime(301484, 1, 9, 40)), '%A'),
                          'Monday')
-
 
     def test_weekday_hebrew_hebrew(self):
         self.assertEqual(format(DateTime(HebrewYear,
@@ -88,7 +87,7 @@ class TestFormatDateTime(unittest.TestCase):
 
     def test_day_of_month_hebrew_spacepad(self):
         self.assertEqual(format(DateTime(HebrewYear,
-                                AbsTime(301484, 1, 9, 40)),'%_D'), ' 9')
+                                AbsTime(301484, 1, 9, 40)), '%_D'), ' 9')
 
     def test_day_of_month_hebrew_nopad(self):
         self.assertEqual(format(DateTime(HebrewYear,
@@ -142,56 +141,6 @@ class TestFormatDateTime(unittest.TestCase):
     def test_short_year_hebrew_gematria(self):
         self.assertEqual(format(DateTime(HebrewYear,
                                 AbsTime(301484, 1, 9, 40)), '%~y#H'),
-                         u'\u05E2\u05F4\u05D8')
-
-    def test_medium_year_gregorian(self):
-        self.assertEqual(format(DateTime(GregorianYear,
-                                AbsTime(300910, 2, 9, 40)), u'%\u05E9'),
-                         '008')
-
-    def test_medium_year_gregorian_0pad(self):
-        self.assertEqual(format(DateTime(GregorianYear,
-                                AbsTime(300910, 2, 9, 40)), u'%0\u05E9'),
-                         '008')
-
-    def test_medium_year_gregorian_spacepad(self):
-        self.assertEqual(format(DateTime(GregorianYear,
-                                AbsTime(300910, 2, 9, 40)), u'%_\u05E9'),
-                         '  8')
-
-    def test_medium_year_gregorian_nopad(self):
-        self.assertEqual(format(DateTime(GregorianYear,
-                                AbsTime(300910, 2, 9, 40)), u'%-\u05E9'),
-                         '8')
-
-    def test_medium_year_hebrew(self):
-        self.assertEqual(format(DateTime(HebrewYear,
-                                         AbsTime(261254, 6, 9, 40)),
-                                u'%\u05E9'), '008')
-
-    def test_medium_year_hebrew_0pad(self):
-        self.assertEqual(format(DateTime(HebrewYear,
-                                         AbsTime(261254, 6, 9, 40)),
-                                u'%0\u05E9'), '008')
-
-    def test_medium_year_hebrew_spacepad(self):
-        self.assertEqual(format(DateTime(HebrewYear,
-                                         AbsTime(261254, 6, 9, 40)),
-                                u'%_\u05E9'), '  8')
-
-    def test_medium_year_hebrew_nopad(self):
-        self.assertEqual(format(DateTime(HebrewYear,
-                                         AbsTime(261254, 6, 9, 40)),
-                                u'%-\u05E9'), '8')
-
-    def test_medium_year_hebrew_hebrew(self):
-        self.assertEqual(format(DateTime(HebrewYear,
-                                AbsTime(301484, 1, 9, 40)), u'%\u05E9#H'),
-                         '779')
-
-    def test_medium_year_hebrew_gematria(self):
-        self.assertEqual(format(DateTime(HebrewYear,
-                                AbsTime(301484, 1, 9, 40)), u'%~\u05E9#H'),
                          u'\u05EA\u05E9\u05E2\u05F4\u05D8')
 
     def test_full_year_gregorian(self):
@@ -360,7 +309,8 @@ class TestFormatDateTime(unittest.TestCase):
 
     def test_string(self):
         self.assertEqual(format(DateTime(GregorianYear,
-                                         AbsTime(301484, 1, 9, 40)), 'Hello World!'),
+                                         AbsTime(301484, 1, 9, 40)),
+                                'Hello World!'),
                          'Hello World!')
 
     def test_percent(self):

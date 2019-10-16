@@ -758,6 +758,14 @@ class HebrewYear(RegularYear):
                 return to_letters(value)
             raise exception
 
+    def format_short_year(self, fmt):
+        try:
+            return super().format_number(self.value % 100, 2, fmt, True)
+        except UnknownFlagError as exception:
+            if exception.flag == '~':
+                return to_letters(self.value % 1000)
+            raise exception
+
     def sedrah(self, month, date, israel):
         """Returns the sedrah for the month and date in the current year.
 

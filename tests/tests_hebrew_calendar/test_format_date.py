@@ -159,56 +159,6 @@ class TestFormatDate(unittest.TestCase):
     def test_short_year_hebrew_gematria(self):
         self.assertEqual(format(Date(HebrewYear(5779),
                                      HebrewMonth.ELLUL, 9), '%~y#H'),
-                         u'\u05E2\u05F4\u05D8')
-
-    def test_medium_year_gregorian(self):
-        self.assertEqual(format(Date(GregorianYear(2008),
-                                     CivilMonth.SEPTEMBER, 9), u'%\u05E9'),
-                         '008')
-
-    def test_medium_year_gregorian_0pad(self):
-        self.assertEqual(format(Date(GregorianYear(2008),
-                                     CivilMonth.SEPTEMBER, 9), u'%0\u05E9'),
-                         '008')
-
-    def test_medium_year_gregorian_spacepad(self):
-        self.assertEqual(format(Date(GregorianYear(2008),
-                                     CivilMonth.SEPTEMBER, 9), u'%_\u05E9'),
-                         '  8')
-
-    def test_medium_year_gregorian_nopad(self):
-        self.assertEqual(format(Date(GregorianYear(2008),
-                                     CivilMonth.SEPTEMBER, 9), u'%-\u05E9'),
-                         '8')
-
-    def test_medium_year_hebrew(self):
-        self.assertEqual(format(Date(HebrewYear(5008),
-                                     HebrewMonth.ELLUL, 9), u'%\u05E9'),
-                         '008')
-
-    def test_medium_year_hebrew_0pad(self):
-        self.assertEqual(format(Date(HebrewYear(5008),
-                                     HebrewMonth.ELLUL, 9), u'%0\u05E9'),
-                         '008')
-
-    def test_medium_year_hebrew_spacepad(self):
-        self.assertEqual(format(Date(HebrewYear(5008),
-                                     HebrewMonth.ELLUL, 9), u'%_\u05E9'),
-                         '  8')
-
-    def test_medium_year_hebrew_nopad(self):
-        self.assertEqual(format(Date(HebrewYear(5008),
-                                     HebrewMonth.ELLUL, 9), u'%-\u05E9'),
-                         '8')
-
-    def test_medium_year_hebrew_hebrew(self):
-        self.assertEqual(format(Date(HebrewYear(5779),
-                                     HebrewMonth.ELLUL, 9), u'%\u05E9#H'),
-                         '779')
-
-    def test_medium_year_hebrew_gematria(self):
-        self.assertEqual(format(Date(HebrewYear(5779),
-                                     HebrewMonth.ELLUL, 9), u'%~\u05E9#H'),
                          u'\u05EA\u05E9\u05E2\u05F4\u05D8')
 
     def test_full_year_gregorian(self):

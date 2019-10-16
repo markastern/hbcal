@@ -353,7 +353,7 @@ def get_output_line(argv):
         if (output_type in ("hebrew", "daf", "omer")
                 and 'gematria' in args.format):
             params['qualifier'] = '~'
-            params['year_code'] = HEBREW_LETTERS['SHIN']
+            params['year_code'] = 'y'
             params['conjunction'] = ''
         else:
             params['qualifier'] = '-'
