@@ -23,11 +23,11 @@
 # You should have received a copy of the GNU General Public License
 # along with Hbcal.  If not, see <http://www.gnu.org/licenses/>.
 
-import re
 from enum import IntEnum
 
 from .hebrew_letters import HEBREW_LETTERS
 from .gematria import to_letters
+from .format_percent_string import format_percent_string
 
 DAYS_IN_WEEK = 7
 YOM = u"{YOD}{VAV}{FINAL_MEM}".format(**HEBREW_LETTERS)
@@ -40,6 +40,12 @@ WEEKDAY_HEBREW_NAMES = [
     YOM + u" {CHET}{MEM}{YOD}{SHIN}{YOD}".format(**HEBREW_LETTERS),
     YOM + u" {SHIN}{YOD}{SHIN}{YOD}".format(**HEBREW_LETTERS),
     u"{SHIN}{BET}{TAV}".format(**HEBREW_LETTERS)]
+
+
+ESCAPES = {'a': 'format_short_weekday',
+           'A': 'format_weekday',
+           '-': None,
+           '~': None}
 
 
 class Weekday(IntEnum):
@@ -56,11 +62,23 @@ class Weekday(IntEnum):
         return self._name_.title()
 
     def __format__(self, fmt):
-        fmt1, sep, option = fmt.partition('#')
-        if option == "":
-            return self.__str__()
-        matched = re.match('%~A', fmt1)
-        if not matched or self.value == Weekday.SATURDAY:
+        return format_percent_string(self, ESCAPES, fmt)
+
+    def format_weekday(self, fmt):
+        """ Format a weekday as a string """
+        _, _, option = fmt.partition('#')
+        if option == 'H':
             return WEEKDAY_HEBREW_NAMES[self]
-        day = to_letters(self.value + 1)
-        return YOM + ' ' + day
+        return self.__str__()
+
+    def format_short_weekday(self, fmt):
+        """ Format a weekday as a short string (usually 3 characters) """
+        _, _, option = fmt.partition('#')
+        if option == "H":
+            if self.value == Weekday.SATURDAY:
+                name = WEEKDAY_HEBREW_NAMES[self]
+            else:
+                name = u"{YOM} {day}".format(YOM=YOM,
+                                             day=to_letters(self.value + 1))
+            return name
+        return self.__str__()[:3]

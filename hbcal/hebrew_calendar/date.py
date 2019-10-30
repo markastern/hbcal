@@ -76,6 +76,9 @@ class Month(IntEnum):
         return str(self)
 
     def format_month_name(self, fmt, year, date):
+        """ Return the formatted month name
+
+        The result may depend on the year and date"""
         return format(self, fmt)
 
     def __str__(self):
@@ -94,13 +97,12 @@ class Date(FormatPercentString):
         if isinstance(month, AbsTime):
             if month < AbsTime(0, 0, 6):
                 raise BadDate
-            else:
-                year, remainder = year.current_year(month)
-                self.year = year
-                self.month = year.month_class().start_year_month()
-                self.date = year.first_day()
-                days = remainder.days_chalakim[0]
-                self.__iadd__(days)
+            year, remainder = year.current_year(month)
+            self.year = year
+            self.month = year.month_class().start_year_month()
+            self.date = year.first_day()
+            days = remainder.days_chalakim[0]
+            self.__iadd__(days)
         else:
             self.year = year
             (month, self.date) = year.adjust_date(month, date)
@@ -122,10 +124,9 @@ class Date(FormatPercentString):
                                                                   self.date,
                                                                   other)
             return self
-        else:
-            raise TypeError("unsupported operand type(s) for += : " +
-                            "'{0}' and '{1}'".format(self.__class__.__name__,
-                                                     other.__class__.__name__))
+        raise TypeError("unsupported operand type(s) for += : " +
+                        "'{0}' and '{1}'".format(self.__class__.__name__,
+                                                 other.__class__.__name__))
 
     def __isub__(self, other):
         if isinstance(other, int):
@@ -133,10 +134,9 @@ class Date(FormatPercentString):
                                                                   self.date,
                                                                   -other)
             return self
-        else:
-            raise TypeError("unsupported operand type(s) for -= : " +
-                            "'{0}' and '{1}'".format(self.__class__.__name__,
-                                                     other.__class__.__name__))
+        raise TypeError("unsupported operand type(s) for -= : " +
+                        "'{0}' and '{1}'".format(self.__class__.__name__,
+                                                 other.__class__.__name__))
 
     def __add__(self, other):
         total = self
@@ -160,19 +160,24 @@ class Date(FormatPercentString):
         return self.__format__("")
 
     def format_year(self, fmt):
+        """ Return the formatted year"""
         return format(self.year, fmt)
 
     def format_weekday(self, fmt):
+        """ Return the formatted weekday"""
         return format(Weekday(self.day_start.days), fmt)
 
-    def format_month_name(self, fmt, **kwargs):
+    def format_month_name(self, fmt):
+        """ Return the formatted month name"""
         return self.month.format_month_name(fmt, self.year, self.date)
 
     def format_day_of_month(self, fmt):
+        """ Return the day of the month, formatted as 2 digits """
         return self.year.format_number(self.date, 2, fmt)
 
     ESCAPES = {
         'A': 'format_weekday',
+        'a': 'format_weekday',
         'B': 'format_month_name',
         'D': 'format_day_of_month'
     }
@@ -237,7 +242,6 @@ class Year(with_metaclass(ABCMeta, FormatPercentString)):
     @abstractmethod
     def days_in_month(self, month):
         """Return the number of days in the specified month."""
-        pass
 
     @staticmethod
     def first_day():
@@ -386,12 +390,11 @@ class Year(with_metaclass(ABCMeta, FormatPercentString)):
         raise NotImplementedError
 
     def format_short_year(self, fmt):
+        """ Format year (excluding hundreds) as a 2 digit number """
         return self.format_number(self.value % 100, 2, fmt)
 
-    def format_medium_year(self, fmt):
-        return self.format_number(self.value % 1000, 3, fmt)
-
-    def format_full_year(self, fmt, **kwargs):
+    def format_full_year(self, fmt):
+        """ Format year as a 4+ digit number """
         return self.format_number(self.value, 4, fmt)
 
     @classmethod
@@ -498,15 +501,19 @@ class DateTime(FormatPercentString):
         self.date.day_start = atime - self.time
 
     def format_date(self, fmt):
+        """ Format date according to format specified by fmt """
         return format(self.date, fmt)
 
     def format_hours(self, fmt):
+        """ Format hours as a 2 digit number """
         return self.date.year.format_number(self.time.hours, 2, fmt)
 
     def format_minutes(self, fmt):
+        """ Format minutes (excluding hours) as a 2 digit number """
         return self.date.year.format_number(self.time.minutes, 2, fmt)
 
     def format_chalakim(self, fmt):
+        """ Format chalakim (excluding minutes) as a 2 digit number """
         return self.date.year.format_number(self.time.parts, 2, fmt)
 
     ESCAPES = {

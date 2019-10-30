@@ -41,9 +41,19 @@ class TestFormatDate(unittest.TestCase):
                                      HebrewMonth.ELLUL, 9), '%A#H'),
                          u'\u05D9\u05D5\u05DD \u05E9\u05E0\u05D9')
 
-    def test_weekday_hebrew_gematria(self):
+    def test_short_weekday_gregorian(self):
+        self.assertEqual(format(Date(GregorianYear(2019),
+                                     CivilMonth.SEPTEMBER, 9), '%a'),
+                         'Mon')
+
+    def test_short_weekday_hebrew_phonetics(self):
         self.assertEqual(format(Date(HebrewYear(5779),
-                                     HebrewMonth.ELLUL, 9), '%~A#H'),
+                                     HebrewMonth.ELLUL, 9), '%a'),
+                         'Mon')
+
+    def test_short_weekday_hebrew_hebrew(self):
+        self.assertEqual(format(Date(HebrewYear(5779),
+                                     HebrewMonth.ELLUL, 9), '%a#H'),
                          u'\u05D9\u05D5\u05DD \u05D1\u05F3')
 
     def test_month_name_gregorian(self):

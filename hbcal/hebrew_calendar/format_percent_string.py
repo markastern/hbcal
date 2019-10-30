@@ -17,11 +17,63 @@
 # along with Hbcal.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-from abc import ABCMeta
-from future.utils import with_metaclass, iteritems
+from future.utils import iteritems
 from future.builtins import super
 from cached_property import cached_property
-from .abstract_attribute import AbstractAttribute
+
+
+def format_percent_string(obj, escapes, fmt):
+    """ Format an object using a formatting string
+
+    Args:
+        obj:        an object with attributes to format and methods to format
+                    them
+        escapes:    a mapping whose keys are single characters
+        fmt:        a string specifying how to format the object
+
+    Returns:
+        A formatted string
+
+    If fmt does not contain '%', returns fmt.
+
+    The formatting string (fmt) may contain escape sequences of the form:
+
+    %[<flag>]<option>
+
+    where <flag> is a key in escapes with value None and <option> is a key in
+    escapes whose value is a string. The string is a method name in obj.
+    The method will be called with a single parameter (the escape sequence)
+    and the returned string from the object method will replace the escape
+    sequence in the returned string from this function.
+
+    '%%' will be replaced by a single '%'
+
+    The effect of unrecognized escape sequences (not in escapes) is undefined.
+
+    If fmt contains a hash ('#'), the hash and everything after it will not be
+    processed as above, but will instead be appended to the escape string
+    whenever a method in obj is called as above.
+    """
+    fmt1, sep, option = fmt.partition('#')
+    formatted, escape_sequence = '', ''
+    for char in fmt1:
+        if escape_sequence:
+            if char in escapes:
+                escape_sequence += char
+                if escapes[char] is not None:
+                    fmt = escape_sequence + sep + option
+                    formatted += getattr(obj, escapes[char])(fmt)
+                    escape_sequence = ''
+            else:
+                escape_sequence = ''
+                formatted += char
+        else:
+            if char == '%':
+                escape_sequence += char
+            else:
+                formatted += char
+    formatted += escape_sequence
+    return formatted
 
 
 class UnknownFlagError(TypeError):
@@ -33,24 +85,23 @@ class UnknownFlagError(TypeError):
         super().__init__(message, flag, *args)
 
 
-class FormatPercentString(with_metaclass(ABCMeta, object)):
+class FormatPercentString(object):
     """A class for formatting strings (typically date and time).
 
     Most characters are unchanged, but the string may contain an escape
     sequence of the form % [flag] <character> (without spaces). These
-    characters will be replaced by the result of a method determined by
+    sequences will be replaced by the result of a method determined by
     <character>, possibly modified by the optional flag. These are defined
     by the subclass.
 
-    %% is converted to a literal %.
+    %% is converted to a single %.
 
     The string may contain a hash, in which case only characters before the
     hash are processed as above. Any characters after the hash may further
-    modify processing (globally, for the entire string."""
+    modify processing (globally, for the entire string).
+    """
 
-    # ESCAPES must be defined as a dictionary mapping option characters to
-    # functions that handle them
-    ESCAPES = AbstractAttribute("The options valid after an escape (%)")
+    ESCAPES = {}
     SUBFORMATTERS = tuple()
 
     @cached_property
@@ -64,26 +115,7 @@ class FormatPercentString(with_metaclass(ABCMeta, object)):
         return escapes
 
     def __format__(self, fmt):
-        fmt1, sep, option = fmt.partition('#')
-        formatted, escape_sequence = '', ''
-        for char in fmt1:
-            if escape_sequence:
-                if char in self.escapes:
-                    escape_sequence += char
-                    if self.escapes[char] is not None:
-                        fmt = escape_sequence + sep + option
-                        formatted += getattr(self, self.escapes[char])(fmt)
-                        escape_sequence = ''
-                else:
-                    escape_sequence = ''
-                    formatted += char
-            else:
-                if char == '%':
-                    escape_sequence += char
-                else:
-                    formatted += char
-        formatted += escape_sequence
-        return formatted
+        return format_percent_string(self, self.escapes, fmt)
 
     @staticmethod
     def format_number(value, places, fmt, validate_flag=False):

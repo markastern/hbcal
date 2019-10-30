@@ -69,6 +69,13 @@ class TestNoConfigFile(TestCase):
         self.assertEqual(u"\u05E9\u05D1\u05EA \u05D1\u05F3 \u05D0\u05D1 "
                          + u"\u05EA\u05E9\u05E2\u05F4\u05D8", output[0])
 
+    def test_gematria_option_midweek(self):
+        """Test '--format gematria' command line option."""
+        output = hbcal("hbcal -ig --format gematria -oh 4 8 2019")
+        self.assertEqual(u"\u05D9\u05D5\u05DD \u05D0\u05F3 \u05D2\u05F3 "
+                         + u"\u05D0\u05D1 \u05EA\u05E9\u05E2\u05F4\u05D8",
+                         output[0])
+
     def test_normal_gematria_options(self):
         """Test '--format normal gematria' command line option."""
         output = hbcal("hbcal -ig --format normal gematria -oh 3 8 2019")
