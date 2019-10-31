@@ -69,7 +69,7 @@ OUTPUT_CLASSES = {"civil": BritishYear, "gregorian": GregorianYear,
                   "omer": HebrewYear}
 CALENDAR_TYPES = frozenset(('civil', 'gregorian', 'hebrew', 'julian', 'daf'))
 DAFBIND_TYPES = [x for x in CALENDAR_TYPES if x != "daf"]
-BASE_FORMAT = u'%{weekday_code} %{qualifier}D %B %{qualifier}{year_code}'
+BASE_FORMAT = u'%{weekday_code} %{qualifier}D %B %{qualifier}Y'
 DATE_FORMAT = BASE_FORMAT + '{fmt}'
 MOLAD_FORMAT = BASE_FORMAT + u" %H:%M {conjunction}%{qualifier}P {parts}{fmt}"
 VAV = u"{VAV}".format(**HEBREW_LETTERS)
@@ -358,12 +358,10 @@ def get_output_line(argv):
         if (output_type in ("hebrew", "daf", "omer")
                 and 'gematria' in args.format):
             params['qualifier'] = '~'
-            params['year_code'] = 'y'
             params['weekday_code'] = 'a'
             params['conjunction'] = ''
         else:
             params['qualifier'] = '-'
-            params['year_code'] = 'Y'
             params['weekday_code'] = 'A'
         try:
             value = get_date_time(atime, OUTPUT_CLASSES[output_type])

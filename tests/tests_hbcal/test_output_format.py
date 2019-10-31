@@ -67,32 +67,37 @@ class TestNoConfigFile(TestCase):
         """Test '--format gematria' command line option."""
         output = hbcal("hbcal -ig --format gematria -oh 3 8 2019")
         self.assertEqual(u"\u05E9\u05D1\u05EA \u05D1\u05F3 \u05D0\u05D1 "
-                         + u"\u05EA\u05E9\u05E2\u05F4\u05D8", output[0])
+                         + u"\u05D4\u05F3\u05EA\u05E9\u05E2\u05F4\u05D8",
+                         output[0])
 
     def test_gematria_option_midweek(self):
         """Test '--format gematria' command line option."""
         output = hbcal("hbcal -ig --format gematria -oh 4 8 2019")
         self.assertEqual(u"\u05D9\u05D5\u05DD \u05D0\u05F3 \u05D2\u05F3 "
-                         + u"\u05D0\u05D1 \u05EA\u05E9\u05E2\u05F4\u05D8",
+                         + u"\u05D0\u05D1 "
+                         + u"\u05D4\u05F3\u05EA\u05E9\u05E2\u05F4\u05D8",
                          output[0])
 
     def test_normal_gematria_options(self):
         """Test '--format normal gematria' command line option."""
         output = hbcal("hbcal -ig --format normal gematria -oh 3 8 2019")
         self.assertEqual(u"\u05E9\u05D1\u05EA \u05D1\u05F3 \u05D0\u05D1 "
-                         + u"\u05EA\u05E9\u05E2\u05F4\u05D8", output[0])
+                         + u"\u05D4\u05F3\u05EA\u05E9\u05E2\u05F4\u05D8",
+                         output[0])
 
     def test_reverse_gematria_options(self):
         """Test '--format reverse gematria' command line option."""
         output = hbcal("hbcal -ig --format reverse gematria -oh 3 8 2019")
-        self.assertEqual(u"\u05D8\u05F4\u05E2\u05E9\u05EA \u05D1\u05D0 "
-                         + u"\u05F3\u05D1 \u05EA\u05D1\u05E9", output[0])
+        self.assertEqual(u"\u05D8\u05F4\u05E2\u05E9\u05EA\u05F3\u05D4 "
+                         + u"\u05D1\u05D0 \u05F3\u05D1 \u05EA\u05D1\u05E9",
+                         output[0])
 
     def test_html_gematria_options(self):
         """Test '--format normal gematria' command line option."""
         output = hbcal("hbcal -ig --format html gematria -oh 3 8 2019")
         self.assertEqual('&#1513;&#1489;&#1514; &#1489;&#1523; &#1488;&#1489; '
-                         + '&#1514;&#1513;&#1506;&#1524;&#1496;', output[0])
+                         + '&#1492;&#1523;&#1514;&#1513;&#1506;&#1524;&#1496;',
+                         output[0])
 
     def test_phonetics_gematria_options(self):
         with self.assertRaises(SystemExit):
@@ -179,7 +184,8 @@ class TestGematriaInConfigFile(TestNoConfigFile):
     def test_default(self):
         output = hbcal("hbcal -ig -oh 3 8 2019")
         self.assertEqual(u"\u05E9\u05D1\u05EA \u05D1\u05F3 \u05D0\u05D1 "
-                         + u"\u05EA\u05E9\u05E2\u05F4\u05D8", output[0])
+                         + u"\u05D4\u05F3\u05EA\u05E9\u05E2\u05F4\u05D8",
+                         output[0])
 
 
 class TestNormalGematriaInConfigFile(TestNoConfigFile):
@@ -190,7 +196,8 @@ class TestNormalGematriaInConfigFile(TestNoConfigFile):
     def test_default(self):
         output = hbcal("hbcal -ig -oh 3 8 2019")
         self.assertEqual(u"\u05E9\u05D1\u05EA \u05D1\u05F3 \u05D0\u05D1 "
-                         + u"\u05EA\u05E9\u05E2\u05F4\u05D8", output[0])
+                         + u"\u05D4\u05F3\u05EA\u05E9\u05E2\u05F4\u05D8",
+                         output[0])
 
 
 class TestReverseGematriaInConfigFile(TestNoConfigFile):
@@ -200,8 +207,9 @@ class TestReverseGematriaInConfigFile(TestNoConfigFile):
 
     def test_default(self):
         output = hbcal("hbcal -ig -oh 3 8 2019")
-        self.assertEqual(u"\u05D8\u05F4\u05E2\u05E9\u05EA \u05D1\u05D0 "
-                         + u"\u05F3\u05D1 \u05EA\u05D1\u05E9", output[0])
+        self.assertEqual(u"\u05D8\u05F4\u05E2\u05E9\u05EA\u05F3\u05D4 "
+                         + u"\u05D1\u05D0 \u05F3\u05D1 \u05EA\u05D1\u05E9",
+                         output[0])
 
 
 class TestHtmlGematriaInConfigFile(TestNoConfigFile):
@@ -212,7 +220,8 @@ class TestHtmlGematriaInConfigFile(TestNoConfigFile):
     def test_default(self):
         output = hbcal("hbcal -ig -oh 3 8 2019")
         self.assertEqual('&#1513;&#1489;&#1514; &#1489;&#1523; &#1488;&#1489; '
-                         + '&#1514;&#1513;&#1506;&#1524;&#1496;', output[0])
+                         + '&#1492;&#1523;&#1514;&#1513;&#1506;&#1524;&#1496;',
+                         output[0])
 
 
 class TestPhoneticsGematriaInConfigFile(TestCase):
