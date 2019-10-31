@@ -763,7 +763,8 @@ class HebrewYear(RegularYear):
             return super().format_number(self.value % 100, 2, fmt, True)
         except UnknownFlagError as exception:
             if exception.flag == '~':
-                return to_letters(self.value % 1000)
+                short_value = self.value % 1000
+                return to_letters(short_value) if short_value else ''
             raise exception
 
     def sedrah(self, month, date, israel):
@@ -778,58 +779,50 @@ class HebrewYear(RegularYear):
             # Count the number of sabbaths from the sabbath on or after
             # Rosh Hashonah to the sabbath on or after today.
             week_count = (date + rh_day - 1) // DAYS_IN_WEEK
-            # if rh_day == Weekday.SATURDAY:
-            #     table = RH_SATURDAY_TABLE
-            # elif rh_day == Weekday.THURSDAY:
-            #     table = RH_THURSDAY_TABLE
-            # else:
-            #     table = RH_MONDAY_TUESDAY_TABLE
             return RH_TABLE[rh_day][week_count]
-        else:
-            pesach_day = (rh_day + self.days_in_year() - 2) % DAYS_IN_WEEK
-            if self.months_in_year() == self.MONTHS_IN_SIMPLE_YEAR:
-                if pesach_day == Weekday.SATURDAY:
-                    table = SEDRAH_TABLE4 if israel else SEDRAH_TABLE5
-                else:
-                    if pesach_day == Weekday.THURSDAY and not israel:
-                        table = SEDRAH_TABLE2
-                    elif (pesach_day == Weekday.SUNDAY and
-                          self.year_type() == YearType.FULL):
-                        table = SEDRAH_TABLE3
-                    else:
-                        table = SEDRAH_TABLE1
+        pesach_day = (rh_day + self.days_in_year() - 2) % DAYS_IN_WEEK
+        if self.months_in_year() == self.MONTHS_IN_SIMPLE_YEAR:
+            if pesach_day == Weekday.SATURDAY:
+                table = SEDRAH_TABLE4 if israel else SEDRAH_TABLE5
             else:
-                if pesach_day == Weekday.SATURDAY:
-                    table = SEDRAH_TABLE6 if israel else SEDRAH_TABLE7
+                if pesach_day == Weekday.THURSDAY and not israel:
+                    table = SEDRAH_TABLE2
+                elif (pesach_day == Weekday.SUNDAY
+                      and self.year_type() == YearType.FULL):
+                    table = SEDRAH_TABLE3
                 else:
-                    if pesach_day == Weekday.THURSDAY and not israel:
-                        table = SEDRAH_TABLE9
-                    elif ((pesach_day == Weekday.TUESDAY and
-                           self.year_type() == YearType.FULL) or
-                          pesach_day == Weekday.SUNDAY):
-                        table = SEDRAH_TABLE10
-                    else:
-                        table = SEDRAH_TABLE8
+                    table = SEDRAH_TABLE1
+        else:
+            if pesach_day == Weekday.SATURDAY:
+                table = SEDRAH_TABLE6 if israel else SEDRAH_TABLE7
+            else:
+                if pesach_day == Weekday.THURSDAY and not israel:
+                    table = SEDRAH_TABLE9
+                elif ((pesach_day == Weekday.TUESDAY
+                       and self.year_type() == YearType.FULL)
+                      or pesach_day == Weekday.SUNDAY):
+                    table = SEDRAH_TABLE10
+                else:
+                    table = SEDRAH_TABLE8
 
-            # Calculate the date of the next sabbath (or today if today
-            # is the sabbath).
-            next_shabbat = self.day_start(month, date)
-            next_shabbat += abs_time.RelTime(0, 6 - next_shabbat.days, 0, 0)
-            # Bereshith is the last sabbath in tishri.
-            shabbat_bereshith = self.day_start(HebrewMonth.TISHRI,
-                                               29 if rh_day == Weekday.SATURDAY
-                                               else 28 - rh_day)
+        # Calculate the date of the next sabbath (or today if today
+        # is the sabbath).
+        next_shabbat = self.day_start(month, date)
+        next_shabbat += abs_time.RelTime(0, 6 - next_shabbat.days, 0, 0)
+        # Bereshith is the last sabbath in tishri.
+        shabbat_bereshith = self.day_start(HebrewMonth.TISHRI,
+                                           29 if rh_day == Weekday.SATURDAY
+                                           else 28 - rh_day)
 
-#           Calculate the number of sabbaths from Shabbat Bereshith to the
-#           current or next sabbath.
-            week_count = (next_shabbat - shabbat_bereshith).weeks
-            return (tuple(Sedrah)[:int(Sedrah.KI_THISSA)] + table +
-                    tuple(Sedrah)[int(Sedrah.DEVARIM) - 1:
-                                  int(Sedrah.KI_THAVO)] +
-                    ((Sedrah.NITZAVIM, Sedrah.VAYYELECH)
-                     if pesach_day in (Weekday.SATURDAY, Weekday.SUNDAY) else
-                     (Sedrah.NITZAVIM_VAYYELECH,)) +
-                    (Sedrah.HAAZINU,))[week_count]
+        #  Calculate the number of sabbaths from Shabbat Bereshith to the
+        #  current or next sabbath.
+        week_count = (next_shabbat - shabbat_bereshith).weeks
+        return (tuple(Sedrah)[:int(Sedrah.KI_THISSA)] + table +
+                tuple(Sedrah)[int(Sedrah.DEVARIM) - 1: int(Sedrah.KI_THAVO)]
+                + ((Sedrah.NITZAVIM, Sedrah.VAYYELECH)
+                   if pesach_day in (Weekday.SATURDAY, Weekday.SUNDAY)
+                   else (Sedrah.NITZAVIM_VAYYELECH,))
+                + (Sedrah.HAAZINU,))[week_count]
 
     def omer_day(self, month, date):
         """Return day of the omer (or None if outside the omer)."""

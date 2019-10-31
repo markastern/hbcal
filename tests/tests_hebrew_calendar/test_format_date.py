@@ -171,6 +171,10 @@ class TestFormatDate(unittest.TestCase):
                                      HebrewMonth.ELLUL, 9), '%~y#H'),
                          u'\u05EA\u05E9\u05E2\u05F4\u05D8')
 
+    def test_short_year_hebrew_gematria_zero(self):
+        self.assertEqual(format(Date(HebrewYear(5000),
+                                     HebrewMonth.ELLUL, 9), '%~y#H'), '')
+
     def test_full_year_gregorian(self):
         self.assertEqual(format(Date(GregorianYear(8),
                                      CivilMonth.SEPTEMBER, 9), '%Y'),

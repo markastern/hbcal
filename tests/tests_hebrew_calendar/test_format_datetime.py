@@ -153,6 +153,10 @@ class TestFormatDateTime(unittest.TestCase):
                                 AbsTime(301484, 1, 9, 40)), '%~y#H'),
                          u'\u05EA\u05E9\u05E2\u05F4\u05D8')
 
+    def test_short_year_hebrew_gematria_zero(self):
+        self.assertEqual(format(DateTime(HebrewYear,
+                                AbsTime(312984, 1, 9, 40)), '%~y#H'), '')
+
     def test_full_year_gregorian(self):
         self.assertEqual(format(DateTime(GregorianYear,
                                 AbsTime(196555, 2, 9, 40)), '%Y'), '0008')
