@@ -125,19 +125,24 @@ def get_config():
     return parameters
 
 
-def list_months(year_class, fmt=''):
+def list_months(year_class, fmt=None):
     """Return a formatted list of values and month names for a Year class.
 
     Parameters:
         year_class: A subclass of Year
+        fmt:        An array of output format options from the command line
     Return:
         A string comprising value, name for each month in year_class
         Months are separated by new lines.
     """
-    return u"\n".join(u"    {value:2d}    {name:{fmt}}".format(value=x.value,
-                                                               name=x,
-                                                               fmt=fmt)
-                      for x in year_class.month_class())
+    line = u"{tab}{value:2d}{tab}{name}"
+    if fmt is None:
+        fmt = ['phonetics']
+    return "\n".join(line.format(tab='    ',
+                                 value=x.value,
+                                 name=x if 'phonetics' in fmt else reformat(
+                                     format(x, '#H'), fmt))
+                     for x in year_class.month_class())
 
 
 def parse_arguments(args, parameters):
@@ -179,8 +184,8 @@ def parse_arguments(args, parameters):
                             encoding='utf-8')
     epilog = help_file.read().format(
         civil_months=list_months(JulianYear),
-        hebrew_months=list_months(HebrewYear, fmt),
-        tractates=list_months(DafYomiCycle, fmt),
+        hebrew_months=list_months(HebrewYear, fmt_args.format),
+        tractates=list_months(DafYomiCycle, fmt_args.format),
         fmt=fmt,
         # In Python 3.4 we can use more **s to simplify this
         Shekalim=DafYomiCycle.month_class().SHEKALIM,
