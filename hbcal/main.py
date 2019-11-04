@@ -145,6 +145,16 @@ def list_months(year_class, fmt=None):
                      for x in year_class.month_class())
 
 
+def format_month(month, fmt=None):
+    """ Format the month as a name
+
+    The output will be based on the format parameter in the command line."""
+    if fmt is None:
+        fmt = ['phonetics']
+    return format(u'{name}'.format(name=month if 'phonetics' in fmt
+                                   else reformat(format(month, '#H'), fmt)))
+
+
 def parse_arguments(args, parameters):
     """Parse the command line arguments
 
@@ -189,11 +199,13 @@ def parse_arguments(args, parameters):
         fmt=fmt,
         # In Python 3.4 we can use more **s to simplify this
         Shekalim=DafYomiCycle.month_class().SHEKALIM,
-        Kinnim=SubTractate.KINNIM,
-        Tamid=SubTractate.TAMID,
-        Middos=SubTractate.MIDDOS,
-        Meilah=DafYomiCycle.month_class().MEILAH,
-        **{x.name(): x for x in HebrewYear.month_class()})
+        Kinnim=format_month(SubTractate.KINNIM, fmt_args.format),
+        Tamid=format_month(SubTractate.TAMID, fmt_args.format),
+        Middos=format_month(SubTractate.MIDDOS, fmt_args.format),
+        Meilah=format_month(DafYomiCycle.month_class().MEILAH,
+                            fmt_args.format),
+        **{x.name(): format_month(x, fmt_args.format)
+           for x in HebrewYear.month_class()})
 
     # Parse command line arguments
     parser = ArgumentParser(prog=prog_name,
