@@ -234,11 +234,6 @@ class TestFormatDateTime(unittest.TestCase):
         self.assertEqual(format(DateTime(HebrewYear,
                                 AbsTime(301484, 1, 9, 40)), '%H#H'), '09')
 
-    def test_hours_hebrew_gematria(self):
-        self.assertEqual(format(DateTime(HebrewYear,
-                                AbsTime(301484, 1, 9, 40)), '%~H#H'),
-                         u'\u05D8\u05F3')
-
     def test_minutes_gregorian(self):
         self.assertEqual(format(DateTime(GregorianYear,
                                 AbsTime(196555, 2, 9, 40)), '%M'), '02')
@@ -275,11 +270,6 @@ class TestFormatDateTime(unittest.TestCase):
         self.assertEqual(format(DateTime(HebrewYear,
                                 AbsTime(301484, 1, 9, 40)), '%M#H'), '02')
 
-    def test_minutes_hebrew_gematria(self):
-        self.assertEqual(format(DateTime(HebrewYear,
-                                AbsTime(301484, 1, 9, 40)), '%~M#H'),
-                         u'\u05D1\u05F3')
-
     def test_remaining_parts_gregorian(self):
         self.assertEqual(format(DateTime(GregorianYear,
                                 AbsTime(196555, 2, 9, 40)), '%P'), '04')
@@ -315,11 +305,6 @@ class TestFormatDateTime(unittest.TestCase):
     def test_remaining_parts_hebrew_hebrew(self):
         self.assertEqual(format(DateTime(HebrewYear,
                                 AbsTime(301484, 1, 9, 40)), '%P#H'), '04')
-
-    def test_remaining_parts_hebrew_gematria(self):
-        self.assertEqual(format(DateTime(HebrewYear,
-                                AbsTime(301484, 1, 9, 40)), '%~P#H'),
-                         u'\u05D3\u05F3')
 
     def test_string(self):
         self.assertEqual(format(DateTime(GregorianYear,

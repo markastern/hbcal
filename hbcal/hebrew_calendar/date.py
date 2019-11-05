@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """This module defines calendar classes (mostly abstract) for hbcal"""
 
 # Copyright 2015, 2016, 2019 Mark Stern
@@ -89,7 +90,74 @@ class Date(FormatPercentString):
     """A date class for different calendar types.
 
     The year attribute is an instance of class Year and determines the
-    calendar type."""
+    calendar type.
+
+    Date objects can be formatted using the standard python format command
+    to create a string representing the date under the control of an explicit
+    format string.
+
+    Format Codes
+
+    Directive   Meaning                             Example
+
+    %a          Weekday as an abbreviated name      Sun, Mon, …, Sat
+
+    %a#H        Weekday as an abbreviated name      יום א׳, יום ב׳, …, שבת
+                using Hebrew letters as numbers
+
+    %A          Weekday as full name                Sunday, Monday, …,
+                                                    Saturday
+
+    %A#H        Weekday as full Hebrew name         יום ראשון, יום שני, …, שבת
+
+    %B          Month as full name                  January, February, …,
+                                                    December
+                                                    Nissan, Iyar, …, Ellul
+
+    %B#H        Month as full name in Hebrew        ניסן, אייר, …, אלול
+                letters
+
+    %d          Day of the month as a zero-padded   01, 02, …, 31
+                decimal number
+
+    %-d         Day of the month as a decimal       1, 2, …, 31
+                number
+
+    %_d         Day of the month as a space-padded  ' 1', ' 2', …, 31
+                decimal number
+
+    %~d#H       Day of the month using Hebrew       א׳, ב׳, …, ל׳
+                letters as numbers
+
+    %y          Year without century as a           00, 01, …, 99
+                zero-padded decimal number
+
+    %-y         Year without century as a decimal   0, 1, …, 99
+                number
+
+    %_y         Year without century as a           ' 0', ' 1', …, 99
+                space-padded decimal number
+
+    %~y#H       Year without millenium using        א׳, …, תתקצ״ט ,''
+                Hebrew letters as numbers
+
+    %Y          Year as a zero-padded decimal       0000, 0001, …, 9999
+                number
+
+    %-Y         Year as a decimal number            0, 1, …, 9999
+
+    %_Y         Year as a space-padded decimal      '   0', '   1', …, 9999
+                number
+
+    %~Y#H       Year using Hebrew letters as       א׳, ב׳, ה׳תש״פ, …
+                numbers
+
+    %%          A single percent sign              %
+
+    NOTE: '#H' may be specified only once in the formatting string, at its
+    end. It will then qualify all format codes within the formatting string.
+    It is only valid if the year is a HebrewYear or DafYomiCycle
+    """
 
     SUBFORMATTERS = ('year',)
 
@@ -482,7 +550,101 @@ class DateTime(FormatPercentString):
     """A class comprising a Date object and a RelTime object.
 
     The object represents an instant in time. It comprises a Date object and
-    a RelTime object (the latter should comprise only hours and chalakim)."""
+    a RelTime object (the latter should comprise only hours and chalakim).
+
+    DateTime objects can be formatted using the standard python format command
+    to create a string representing the date and time under the control of an
+    explicit format string.
+
+    Format Codes
+
+    Directive   Meaning                             Example
+
+    %a          Weekday as an abbreviated name      Sun, Mon, …, Sat
+
+    %a#H        Weekday as an abbreviated name      יום א׳, יום ב׳, …, שבת
+                using Hebrew letters as numbers
+
+    %A          Weekday as full name                Sunday, Monday, …,
+                                                    Saturday
+
+    %A#H        Weekday as full Hebrew name         יום ראשון, יום שני, …, שבת
+
+    %B          Month as full name                  January, February, …,
+                                                    December
+                                                    Nissan, Iyar, …, Ellul
+
+    %B#H        Month as full name in Hebrew        ניסן, אייר, …, אלול
+                letters
+
+    %d          Day of the month as a zero-padded   01, 02, …, 31
+                decimal number
+
+    %-d         Day of the month as a decimal       1, 2, …, 31
+                number
+
+    %_d         Day of the month as a space-padded  ' 1', ' 2', …, 31
+                decimal number
+
+    %~d#H       Day of the month using Hebrew       א׳, ב׳, …, ל׳
+                letters as numbers
+
+    %H          Hour of the day as a zero-padded    00, 01, …, 23
+                decimal number
+
+    %-H         Hour of the day as a decimal        0, 1, …, 23
+                number
+
+    %_H         Hour of the day as a space-padded   ' 0', ' 1', …, 23
+                decimal number
+
+    %M          Minute of the hour as a             01, 02, …, 59
+                zero-padded decimal number
+
+    %-M         Minute of the hour as a decimal     1, 2, …, 59
+                number
+
+    %_M         Minute of the hour as a             ' 1', ' 2', …, 59
+                space-padded decimal number
+
+    %P          Part (1/18) of the minute as a      00, 01, …, 17
+                zero-padded decimal number
+
+    %-P         Part (1/18) of the minute as a      0, 1, …, 17
+                decimal number
+
+    %_P         Part (1/18) of the minute as a      ' 0', ' 1', …, 17
+                space-padded decimal number
+
+    %y          Year without century as a           00, 01, …, 99
+                zero-padded decimal number
+
+    %-y         Year without century as a decimal   0, 1, …, 99
+                number
+
+    %_y         Year without century as a           ' 0', ' 1', …, 99
+                space-padded decimal number
+
+    %~y#H       Year without millenium using        א׳, …, תתקצ״ט ,''
+                Hebrew letters as numbers
+
+    %Y          Year as a zero-padded decimal       0000, 0001, …, 9999
+                number
+
+    %-Y         Year as a decimal number            0, 1, …, 9999
+
+    %_Y         Year as a space-padded decimal      '   0', '   1', …, 9999
+                number
+
+    %~Y#H       Year using Hebrew letters as       א׳, ב׳, ה׳תש״פ, …
+                numbers
+
+    %%          A single percent sign                   %
+
+    NOTE: '#H' may be specified only once in the formatting string, at its
+    end. It will then qualify all format codes within the formatting string.
+    It is only valid if the year is a HebrewYear or DafYomiCycle
+    """
 
     SUBFORMATTERS = ('date', )
 
@@ -506,15 +668,15 @@ class DateTime(FormatPercentString):
 
     def format_hours(self, fmt):
         """ Format hours as a 2 digit number """
-        return self.date.year.format_number(self.time.hours, 2, fmt)
+        return self.format_number(self.time.hours, 2, fmt)
 
     def format_minutes(self, fmt):
         """ Format minutes (excluding hours) as a 2 digit number """
-        return self.date.year.format_number(self.time.minutes, 2, fmt)
+        return self.format_number(self.time.minutes, 2, fmt)
 
     def format_chalakim(self, fmt):
         """ Format chalakim (excluding minutes) as a 2 digit number """
-        return self.date.year.format_number(self.time.parts, 2, fmt)
+        return self.format_number(self.time.parts, 2, fmt)
 
     ESCAPES = {
         'H': 'format_hours',
