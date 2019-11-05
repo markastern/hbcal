@@ -22,6 +22,7 @@ from hbcal.hebrew_calendar.date import DateTime
 
 from hbcal.hebrew_calendar.hebrew_year import HebrewYear
 from hbcal.hebrew_calendar.civil_year import GregorianYear
+from hbcal.hebrew_calendar.daf_yomi import DafYomiCycle
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 
@@ -111,6 +112,36 @@ class TestFormatDateTime(unittest.TestCase):
         self.assertEqual(format(DateTime(HebrewYear,
                                 AbsTime(301484, 1, 9, 40)), '%~D#H'),
                          u'\u05D8\u05F3')
+
+    def test_day_of_month_daf(self):
+        self.assertEqual(format(DateTime(DafYomiCycle,
+                                         AbsTime(301348, 3, 4, 40)), '%D'),
+                         '009')
+
+    def test_day_of_month_daf_0pad(self):
+        self.assertEqual(format(DateTime(DafYomiCycle,
+                                         AbsTime(301348, 3, 4, 40)), '%0D'),
+                         '009')
+
+    def test_day_of_month_daf_spacepad(self):
+        self.assertEqual(format(DateTime(DafYomiCycle,
+                                         AbsTime(301348, 3, 4, 40)), '%_D'),
+                         '  9')
+
+    def test_day_of_month_daf_nopad(self):
+        self.assertEqual(format(DateTime(DafYomiCycle,
+                                         AbsTime(301348, 3, 4, 40)), '%-D'),
+                         '9')
+
+    def test_day_of_month_daf_hebrew(self):
+        self.assertEqual(format(DateTime(DafYomiCycle,
+                                         AbsTime(301348, 3, 4, 40)), '%D#H'),
+                         '009')
+
+    def test_day_of_month_daf_gematria(self):
+        self.assertEqual(format(DateTime(DafYomiCycle,
+                                         AbsTime(301368, 3, 4, 40)), '%~D#H'),
+                         u'\u05E7\u05DE\u05F4\u05D8')
 
     def test_short_year_gregorian(self):
         self.assertEqual(format(DateTime(GregorianYear,

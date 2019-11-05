@@ -21,7 +21,9 @@ from future.builtins import super
 
 from .abs_time import AbsTime, DAY
 from .hebrew_letters import HEBREW_LETTERS
+from .gematria import to_letters
 from .date import Month, Year, Date, DateBeforeCreation, BadDate
+from .format_percent_string import UnknownFlagError
 
 
 HEBREW_TRACTATE_NAMES = [
@@ -169,7 +171,6 @@ class Tractate(Month):
 
 class DateBeforeDafYomi(BadDate):
     """An exception class for dates before the first Daf Yomi cycle."""
-    pass
 
 
 class DafYomiCycle(Year):
@@ -240,10 +241,9 @@ class DafYomiCycle(Year):
         dapim = self.DAPIM[month]
         if isinstance(dapim, int):
             return dapim
-        elif callable(dapim):
+        if callable(dapim):
             return dapim(self)
-        else:
-            raise TypeError
+        raise TypeError
 
     def days_in_year(self):
         return self.CYCLE_DAYS_ORIGINAL if self.value < self.SHEKALIM_CHANGE \
@@ -277,17 +277,15 @@ class DafYomiCycle(Year):
     def current_year(cls, atime):
         if atime < cls.START_FIRST_YEAR:
             raise DateBeforeDafYomi
+        if atime < cls.START_SHEKALIM_CHANGE_YEAR:
+            year, remainder = divmod(atime - cls.START_FIRST_YEAR,
+                                     cls.CYCLE_DAYS_ORIGINAL * DAY)
+            year += cls.FIRST_YEAR
         else:
-            if atime < cls.START_SHEKALIM_CHANGE_YEAR:
-                year, remainder = divmod(atime - cls.START_FIRST_YEAR,
-                                         cls.CYCLE_DAYS_ORIGINAL * DAY)
-                year += cls.FIRST_YEAR
-            else:
-                year, remainder = divmod(atime -
-                                         cls.START_SHEKALIM_CHANGE_YEAR,
-                                         cls.CYCLE_DAYS_NOW * DAY)
-                year += cls.SHEKALIM_CHANGE
-            return(cls(year), remainder)
+            year, remainder = divmod(atime - cls.START_SHEKALIM_CHANGE_YEAR,
+                                     cls.CYCLE_DAYS_NOW * DAY)
+            year += cls.SHEKALIM_CHANGE
+        return(cls(year), remainder)
 
     @classmethod
     def min_date(cls):
@@ -297,3 +295,22 @@ class DafYomiCycle(Year):
         if cls.MIN_DATE is None:
             cls.MIN_DATE = Date(cls, cls.START_FIRST_YEAR)
         return cls.MIN_DATE
+
+    def format_day_of_month(self, daf_of_tractate, fmt):
+        """ Return the number of the daf, formatted as 3 digits """
+        return self.format_number(daf_of_tractate, 3, fmt)
+
+    @classmethod
+    def format_number(cls, value, places, fmt):
+        try:
+            return super().format_number(value, places, fmt, True)
+        except UnknownFlagError as exception:
+            if exception.flag == '~':
+                return to_letters(value)
+            raise exception
+
+    class GematriaFlag(object):
+        """ A dummy class used to add '~' to the allowed flags. """
+        escapes = {"~": None}
+
+    SUBFORMATTERS = ('GematriaFlag',)

@@ -118,16 +118,16 @@ class Date(FormatPercentString):
                 letters
 
     %d          Day of the month as a zero-padded   01, 02, …, 31
-                decimal number
+                decimal number                      002, 003, …, 176 (daf)
 
     %-d         Day of the month as a decimal       1, 2, …, 31
-                number
+                number                              2, 3, …, 176 (daf)
 
     %_d         Day of the month as a space-padded  ' 1', ' 2', …, 31
-                decimal number
+                decimal number                      '  2', '  3', …, 176 (daf)
 
     %~d#H       Day of the month using Hebrew       א׳, ב׳, …, ל׳
-                letters as numbers
+                letters as numbers                  (daf) ב׳, ג׳, …, קע״ו
 
     %y          Year without century as a           00, 01, …, 99
                 zero-padded decimal number
@@ -241,7 +241,7 @@ class Date(FormatPercentString):
 
     def format_day_of_month(self, fmt):
         """ Return the day of the month, formatted as 2 digits """
-        return self.year.format_number(self.date, 2, fmt)
+        return self.year.format_day_of_month(self.date, fmt)
 
     ESCAPES = {
         'A': 'format_weekday',
@@ -465,6 +465,10 @@ class Year(with_metaclass(ABCMeta, FormatPercentString)):
         """ Format year as a 4+ digit number """
         return self.format_number(self.value, 4, fmt)
 
+    def format_day_of_month(self, day_of_month, fmt):
+        """ Return the day of the month, formatted as 2 digits """
+        return self.format_number(day_of_month, 2, fmt)
+
     @classmethod
     def min_date(cls):
 
@@ -578,16 +582,16 @@ class DateTime(FormatPercentString):
                 letters
 
     %d          Day of the month as a zero-padded   01, 02, …, 31
-                decimal number
+                decimal number                      002, 003, …, 176 (daf)
 
     %-d         Day of the month as a decimal       1, 2, …, 31
-                number
+                number                              2, 3, …, 176 (daf)
 
     %_d         Day of the month as a space-padded  ' 1', ' 2', …, 31
-                decimal number
+                decimal number                      ' 2', ' 3', …, 176 (daf)
 
     %~d#H       Day of the month using Hebrew       א׳, ב׳, …, ל׳
-                letters as numbers
+                letters as numbers                  (daf) ב׳, ג׳, …, קע״ו
 
     %H          Hour of the day as a zero-padded    00, 01, …, 23
                 decimal number
@@ -643,7 +647,7 @@ class DateTime(FormatPercentString):
 
     NOTE: '#H' may be specified only once in the formatting string, at its
     end. It will then qualify all format codes within the formatting string.
-    It is only valid if the year is a HebrewYear or DafYomiCycle
+    It is only valid if the year is a HebrewYear or DafYomiCycle.
     """
 
     SUBFORMATTERS = ('date', )
