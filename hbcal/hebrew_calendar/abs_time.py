@@ -17,19 +17,17 @@
 # along with Hbcal.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import division
 import numbers
-from .hebrew_letters import HebrewString
-from .gematria import to_letters
+from .hebrew_letters import HEBREW_LETTERS
+from .weekday import DAYS_IN_WEEK
 
 CHALAKIM_IN_HOUR = 1080
 HOURS_IN_DAY = 24
-DAYS_IN_WEEK = 7
 MINUTES_IN_HOUR = 60
 CHALAKIM_IN_MINUTE = CHALAKIM_IN_HOUR // MINUTES_IN_HOUR
 
-PARTS = HebrewString("{CHET}{LAMED}{QOF}{YOD}{FINAL_MEM}")
+PARTS = u"{CHET}{LAMED}{QOF}{YOD}{FINAL_MEM}".format(**HEBREW_LETTERS)
 ENG_TEMPLATE = "{HOURS_MINS} and {REST} parts"
-HEB_TEMPLATE = u"{HOURS_MINS} {VAV}{REST} {PARTS}"
-RVS_TEMPLATE = u"{PARTS} {REST}{VAV} {HOURS_MINS}"
+HEB_TEMPLATE = u"{HOURS_MINS} {CONNECTOR}{REST} {PARTS}"
 
 
 class RelTime(object):
@@ -115,45 +113,6 @@ class RelTime(object):
     def __repr__(self):
         return "RelTime({0})".format(self.chalakim)
 
-    def __format__(self, fmt):
-        fmt1, _, option = fmt.partition('#')
-        if fmt1 != 'hmp':
-            return self.__repr__()
-
-        minutes, chalakim = divmod(self.chalakim, CHALAKIM_IN_MINUTE)
-        hours, minutes = divmod(minutes, MINUTES_IN_HOUR)
-        hours = hours % HOURS_IN_DAY
-        hours_mins = "{0:0>2d}:{1:0>2d}".format(hours, minutes)
-        if 'G' in option:
-            option = option.replace('G', '', 1)
-            # Vav messes up the gematria, so leave it out
-            vav = ''
-            if chalakim:
-                chalakim = HebrewString(
-                    to_letters(chalakim)).__format__('#' + option)
-        else:
-            if option in ('H', 'h', 'R'):
-                vav = HebrewString(u"{VAV}").__format__('#' + option)
-        if not chalakim:
-            template = u"{HOURS_MINS}"
-            extras = {}
-        elif option == "":
-            template = ENG_TEMPLATE
-            extras = {}
-        else:
-            if option in ('H', 'h'):
-                template = HEB_TEMPLATE
-            elif option == 'R':
-                template = RVS_TEMPLATE
-            extras = {
-                'PARTS': PARTS.__format__('#' + option),
-                'VAV': vav
-            }
-
-        result = template.format(HOURS_MINS=hours_mins, REST=chalakim,
-                                 **extras)
-        return result
-
     @property
     def weeks(self):
         """Returns number of weeks in RelTime object."""
@@ -169,6 +128,27 @@ class RelTime(object):
     def days_chalakim(self):
         """Returns a tuple comprising days and leftover chalakim."""
         return divmod(self.chalakim, HOURS_IN_DAY * CHALAKIM_IN_HOUR)
+
+    @property
+    def hours(self):
+        """Returns number of hours (excluding complete weeks and days."""
+        total_hours = self.chalakim // CHALAKIM_IN_HOUR
+        return total_hours % HOURS_IN_DAY
+
+    @property
+    def minutes(self):
+        """Returns number of minutes
+
+        Complete weeks, days and hours are excluded."""
+        total_minutes = self.chalakim // CHALAKIM_IN_MINUTE
+        return total_minutes % MINUTES_IN_HOUR
+
+    @property
+    def parts(self):
+        """Returns number of chalakim.
+
+        Complete weeks, days, hours and minutes are excluded."""
+        return self.chalakim % CHALAKIM_IN_MINUTE
 
 
 DAY = RelTime(0, 1)
@@ -256,31 +236,6 @@ class AbsTime(object):
                                                     self._days,
                                                     self._hours,
                                                     self._chalakim)
-
-    def __format__(self, fmt):
-        fmt1, _, option = fmt.partition('#')
-        if fmt1 != 'hmp':
-            return self.__repr__()
-
-        hours_mins = "{0:0>2d}:{1:0>2d}".format(
-            self._hours, self._chalakim // CHALAKIM_IN_MINUTE)
-        if option == "":
-            template = ENG_TEMPLATE
-            extras = {}
-        else:
-            if option in ('H', 'h'):
-                template = HEB_TEMPLATE
-            elif option == 'R':
-                template = RVS_TEMPLATE
-            extras = {
-                'PARTS': PARTS.__format__('#' + option),
-                'VAV': HebrewString(u"{VAV}").__format__('#' + option)
-            }
-
-        result = template.format(HOURS_MINS=hours_mins,
-                                 REST=self._chalakim % CHALAKIM_IN_MINUTE,
-                                 **extras)
-        return result
 
     # Implement all the rich comparision operators.
     def __eq__(self, other):
@@ -372,3 +327,6 @@ class AbsTime(object):
 
     def __rmul__(self, other):
         return self * other
+
+    def __hash__(self):
+        return hash((self._weeks, self._days, self._hours, self._chalakim))
