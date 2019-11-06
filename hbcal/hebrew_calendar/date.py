@@ -247,7 +247,7 @@ class Date(FormatPercentString):
         'A': 'format_weekday',
         'a': 'format_weekday',
         'B': 'format_month_name',
-        'D': 'format_day_of_month'
+        'd': 'format_day_of_month'
     }
 
 
