@@ -20,6 +20,7 @@ import sys
 from hbcal.hebrew_calendar.date import Date
 
 from hbcal.hebrew_calendar.hebrew_year import HebrewYear, HebrewMonth
+from hbcal.hebrew_calendar.daf_yomi import DafYomiCycle, Tractate
 from hbcal.hebrew_calendar.civil_year import GregorianYear, CivilMonth
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
@@ -73,53 +74,83 @@ class TestFormatDate(unittest.TestCase):
 
     def test_day_of_month_gregorian(self):
         self.assertEqual(format(Date(GregorianYear(2019),
-                                     CivilMonth.SEPTEMBER, 9), '%D'),
+                                     CivilMonth.SEPTEMBER, 9), '%d'),
                          '09')
 
     def test_day_of_month_gregorian_0pad(self):
         self.assertEqual(format(Date(GregorianYear(2019),
-                                     CivilMonth.SEPTEMBER, 9), '%0D'),
+                                     CivilMonth.SEPTEMBER, 9), '%0d'),
                          '09')
 
     def test_day_of_month_gregorian_spacepad(self):
         self.assertEqual(format(Date(GregorianYear(2019),
-                                     CivilMonth.SEPTEMBER, 9), '%_D'),
+                                     CivilMonth.SEPTEMBER, 9), '%_d'),
                          ' 9')
 
     def test_day_of_month_gregorian_nopad(self):
         self.assertEqual(format(Date(GregorianYear(2019),
-                                     CivilMonth.SEPTEMBER, 9), '%-D'),
+                                     CivilMonth.SEPTEMBER, 9), '%-d'),
                          '9')
 
     def test_day_of_month_hebrew(self):
         self.assertEqual(format(Date(HebrewYear(5779),
-                                     HebrewMonth.ELLUL, 9), '%D'),
+                                     HebrewMonth.ELLUL, 9), '%d'),
                          '09')
 
     def test_day_of_month_hebrew_0pad(self):
         self.assertEqual(format(Date(HebrewYear(5779),
-                                     HebrewMonth.ELLUL, 9), '%0D'),
+                                     HebrewMonth.ELLUL, 9), '%0d'),
                          '09')
 
     def test_day_of_month_hebrew_spacepad(self):
         self.assertEqual(format(Date(HebrewYear(5779),
-                                     HebrewMonth.ELLUL, 9), '%_D'),
+                                     HebrewMonth.ELLUL, 9), '%_d'),
                          ' 9')
 
     def test_day_of_month_hebrew_nopad(self):
         self.assertEqual(format(Date(HebrewYear(5779),
-                                     HebrewMonth.ELLUL, 9), '%-D'),
+                                     HebrewMonth.ELLUL, 9), '%-d'),
                          '9')
 
     def test_day_of_month_hebrew_hebrew(self):
         self.assertEqual(format(Date(HebrewYear(5779),
-                                     HebrewMonth.ELLUL, 9), '%D#H'),
+                                     HebrewMonth.ELLUL, 9), '%d#H'),
                          '09')
 
     def test_day_of_month_hebrew_gematria(self):
         self.assertEqual(format(Date(HebrewYear(5779),
-                                     HebrewMonth.ELLUL, 9), '%~D#H'),
+                                     HebrewMonth.ELLUL, 9), '%~d#H'),
                          u'\u05D8\u05F3')
+
+    def test_day_of_month_daf(self):
+        self.assertEqual(format(Date(DafYomiCycle(13),
+                                     Tractate.BAVA_BASRA, 9), '%d'),
+                         '009')
+
+    def test_day_of_month_daf_0pad(self):
+        self.assertEqual(format(Date(DafYomiCycle(13),
+                                     Tractate.BAVA_BASRA, 9), '%0d'),
+                         '009')
+
+    def test_day_of_month_daf_spacepad(self):
+        self.assertEqual(format(Date(DafYomiCycle(13),
+                                     Tractate.BAVA_BASRA, 9), '%_d'),
+                         '  9')
+
+    def test_day_of_month_daf_nopad(self):
+        self.assertEqual(format(Date(DafYomiCycle(13),
+                                     Tractate.BAVA_BASRA, 9), '%-d'),
+                         '9')
+
+    def test_day_of_month_daf_hebrew(self):
+        self.assertEqual(format(Date(DafYomiCycle(13),
+                                     Tractate.BAVA_BASRA, 9), '%d#H'),
+                         '009')
+
+    def test_day_of_month_daf_gematria(self):
+        self.assertEqual(format(Date(DafYomiCycle(13),
+                                     Tractate.BAVA_BASRA, 149), '%~d#H'),
+                         u'\u05E7\u05DE\u05F4\u05D8')
 
     def test_short_year_gregorian(self):
         self.assertEqual(format(Date(GregorianYear(2008),

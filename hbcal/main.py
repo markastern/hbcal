@@ -69,7 +69,7 @@ OUTPUT_CLASSES = {"civil": BritishYear, "gregorian": GregorianYear,
                   "omer": HebrewYear}
 CALENDAR_TYPES = frozenset(('civil', 'gregorian', 'hebrew', 'julian', 'daf'))
 DAFBIND_TYPES = [x for x in CALENDAR_TYPES if x != "daf"]
-BASE_FORMAT = u'%{weekday_code} %{qualifier}D %B %{qualifier}Y'
+BASE_FORMAT = u'%{weekday_code} %{qualifier}d %B %{qualifier}Y'
 DATE_FORMAT = BASE_FORMAT + '{fmt}'
 MOLAD_FORMAT = BASE_FORMAT + u" %H:%M {conjunction}%{qualifier}P {parts}{fmt}"
 VAV = u"{VAV}".format(**HEBREW_LETTERS)
@@ -77,7 +77,7 @@ BAOMER = u"{BET}{AYIN}{VAV}{MEM}{RESH}".format(**HEBREW_LETTERS)
 CHALAKIM = u"{CHET}{LAMED}{QOF}{YOD}{FINAL_MEM}".format(**HEBREW_LETTERS)
 ENGLISH_OMER_FORMAT = u"{count}{suffix} day of the omer"
 HEBREW_OMER_FORMAT = u"{YOM} {{count}} {BAOMER}".format(YOM=YOM, BAOMER=BAOMER)
-DAF_FORMAT = '%B %{qualifier}D{fmt}'
+DAF_FORMAT = '%B %{qualifier}d{fmt}'
 SEDRAH_FORMAT = u"{sedrah:{fmt}}"
 ENGLISH_TEMPLATES = {"civil": DATE_FORMAT, "gregorian": DATE_FORMAT,
                      "hebrew": DATE_FORMAT, "julian": DATE_FORMAT,
