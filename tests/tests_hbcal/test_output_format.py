@@ -339,6 +339,14 @@ class TestMiscellaneous(TestCase):
         self.assertEqual(u"34 (\u05EA\u05D5\u05D3\u05DE) "
                          + u"\u05D4\u05DC\u05D9\u05E2\u05DE", output[0])
 
+    def test_molad_gematria(self):
+        """ Test output of molad using gematria """
+        output = hbcal("hbcal -oh -m -fg 7 11 2019")
+        self.assertEqual(u"\u05D9\u05D5\u05DD \u05D2\u05F3 \u05DC\u05F3 "
+                         + u"\u05EA\u05E9\u05E8\u05D9 "
+                         + u"\u05D4\u05F3\u05EA\u05E9\u05F4\u05E4 00:34 6 "
+                         + u"\u05D7\u05DC\u05E7\u05D9\u05DD", output[0])
+
 
 if __name__ == "__main__":
     unittest.main()

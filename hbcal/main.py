@@ -71,7 +71,7 @@ CALENDAR_TYPES = frozenset(('civil', 'gregorian', 'hebrew', 'julian', 'daf'))
 DAFBIND_TYPES = [x for x in CALENDAR_TYPES if x != "daf"]
 BASE_FORMAT = u'%{weekday_code} %{qualifier}d %B %{qualifier}Y'
 DATE_FORMAT = BASE_FORMAT + '{fmt}'
-MOLAD_FORMAT = BASE_FORMAT + u" %H:%M {conjunction}%{qualifier}P {parts}{fmt}"
+MOLAD_FORMAT = BASE_FORMAT + u" %H:%M {conjunction}%-P {parts}{fmt}"
 VAV = u"{VAV}".format(**HEBREW_LETTERS)
 BAOMER = u"{BET}{AYIN}{VAV}{MEM}{RESH}".format(**HEBREW_LETTERS)
 CHALAKIM = u"{CHET}{LAMED}{QOF}{YOD}{FINAL_MEM}".format(**HEBREW_LETTERS)
