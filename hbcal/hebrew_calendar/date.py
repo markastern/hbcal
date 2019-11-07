@@ -24,7 +24,10 @@ import logging
 
 from future.builtins import range
 from future.utils import PY2, with_metaclass
-from cached_property import cached_property
+try:
+    from functools import cached_property
+except ImportError:
+    from cached_property import cached_property
 
 from .abs_time import RelTime, AbsTime, DAY
 from .abstract_attribute import AbstractAttribute

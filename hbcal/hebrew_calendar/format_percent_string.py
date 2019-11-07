@@ -19,7 +19,10 @@
 import logging
 from future.utils import iteritems
 from future.builtins import super
-from cached_property import cached_property
+try:
+    from functools import cached_property
+except ImportError:
+    from cached_property import cached_property
 
 
 def format_percent_string(obj, escapes, fmt):

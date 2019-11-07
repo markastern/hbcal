@@ -71,7 +71,7 @@ def install_requires():
                     'enum34; python_version < "3.4"',
                     'functools32; python_version < "3.0"',
                     'python-bidi',
-                    'cached-property']
+                    'cached-property; python_version < "3.8"']
     return requirements
 
 
