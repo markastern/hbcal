@@ -1,4 +1,4 @@
-# Copyright 2015 Mark Stern
+# Copyright 2015, 2019 Mark Stern
 #
 # This file is part of Hbcal.
 #
@@ -390,82 +390,82 @@ class TestCurrentDate(unittest.TestCase):
 class TestDayStart(unittest.TestCase):
     def test_start_of_first_year(self):
         self.assertEqual(date.Date(BritishYear(-3758),
-                                   CivilMonth.JANUARY, 1).day_start(),
+                                   CivilMonth.JANUARY, 1).day_start,
                          AbsTime(14, 4, 6, 0))
 
     def test_second_day(self):
         self.assertEqual(date.Date(BritishYear(-3758),
-                                   CivilMonth.JANUARY, 2).day_start(),
+                                   CivilMonth.JANUARY, 2).day_start,
                          AbsTime(14, 5, 6, 0))
 
     def test_last_day_january(self):
         self.assertEqual(date.Date(BritishYear(-3758),
-                                   CivilMonth.JANUARY, 31).day_start(),
+                                   CivilMonth.JANUARY, 31).day_start,
                          AbsTime(18, 6, 6, 0))
 
     def test_first_day_february(self):
         self.assertEqual(date.Date(BritishYear(-3758),
-                                   CivilMonth.FEBRUARY, 1).day_start(),
+                                   CivilMonth.FEBRUARY, 1).day_start,
                          AbsTime(19, 0, 6, 0))
 
     def test_last_day_december(self):
         self.assertEqual(date.Date(BritishYear(-3758),
-                                   CivilMonth.DECEMBER, 31).day_start(),
+                                   CivilMonth.DECEMBER, 31).day_start,
                          AbsTime(66, 4, 6, 0))
 
     def test_first_day_second_year(self):
         self.assertEqual(date.Date(BritishYear(-3757),
-                                   CivilMonth.JANUARY, 1).day_start(),
+                                   CivilMonth.JANUARY, 1).day_start,
                          AbsTime(66, 5, 6, 0))
 
     def test_jan1_1752(self):
         self.assertEqual(date.Date(BritishYear(1752),
-                                   CivilMonth.JANUARY, 1).day_start(),
+                                   CivilMonth.JANUARY, 1).day_start,
                          AbsTime(287518, 3, 6, 0))
 
     def test_sep1_1752(self):
         self.assertEqual(date.Date(BritishYear(1752),
-                                   CivilMonth.SEPTEMBER, 1).day_start(),
+                                   CivilMonth.SEPTEMBER, 1).day_start,
                          AbsTime(287553, 2, 6, 0))
 
     def test_sep2_1752(self):
         self.assertEqual(date.Date(BritishYear(1752),
-                                   CivilMonth.SEPTEMBER, 2).day_start(),
+                                   CivilMonth.SEPTEMBER, 2).day_start,
                          AbsTime(287553, 3, 6, 0))
 
     def test_sep14_1752(self):
         self.assertEqual(date.Date(BritishYear(1752),
-                                   CivilMonth.SEPTEMBER, 14).day_start(),
+                                   CivilMonth.SEPTEMBER, 14).day_start,
                          AbsTime(287553, 4, 6, 0))
 
     def test_sep30_1752(self):
         self.assertEqual(date.Date(BritishYear(1752),
-                                   CivilMonth.SEPTEMBER, 30).day_start(),
+                                   CivilMonth.SEPTEMBER, 30).day_start,
                          AbsTime(287555, 6, 6, 0))
 
     def test_oct1_1752(self):
         self.assertEqual(date.Date(BritishYear(1752),
-                                   CivilMonth.OCTOBER, 1).day_start(),
+                                   CivilMonth.OCTOBER, 1).day_start,
                          AbsTime(287556, 0, 6, 0))
 
     def test_jan1_1753(self):
         self.assertEqual(date.Date(BritishYear(1753),
-                                   CivilMonth.JANUARY, 1).day_start(),
+                                   CivilMonth.JANUARY, 1).day_start,
                          AbsTime(287569, 1, 6, 0))
 
     def test_gregorian_century_year(self):
         self.assertEqual(date.Date(BritishYear(1801),
-                                   CivilMonth.JANUARY, 1).day_start(),
+                                   CivilMonth.JANUARY, 1).day_start,
                          AbsTime(290073, 4, 6, 0))
 
     def test_gregorian_four_century_year(self):
         self.assertEqual(date.Date(BritishYear(2001),
-                                   CivilMonth.JANUARY, 1).day_start(),
+                                   CivilMonth.JANUARY, 1).day_start,
                          AbsTime(300509, 1, 6, 0))
 
     def test_first_day_recent_year(self):
         self.assertEqual(date.Date(BritishYear(2000),
-                                   CivilMonth.JANUARY, 1).day_start(),
+                                   CivilMonth.JANUARY, 1).day_start,
                          AbsTime(300456, 6, 6, 0))
 
 

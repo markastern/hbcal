@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """This module defines calendar classes (mostly abstract) for hbcal"""
 
 # Copyright 2015, 2016, 2019 Mark Stern
@@ -23,31 +24,33 @@ import logging
 
 from future.builtins import range
 from future.utils import PY2, with_metaclass
+try:
+    from functools import cached_property
+except ImportError:
+    from cached_property import cached_property
 
 from .abs_time import RelTime, AbsTime, DAY
 from .abstract_attribute import AbstractAttribute
+from .weekday import Weekday
+from .format_percent_string import FormatPercentString
 
 # Exception Classes
 
 
 class BadDate(ValueError):
     """An exception class for an invalid Date"""
-    pass
 
 
 class DateBeforeCreation(BadDate):
     """An exception class for a date before the creation of the world"""
-    pass
 
 
 class MonthNotInRange(BadDate):
     """An exception class for a date whose month is out of range"""
-    pass
 
 
 class DateNotInRange(BadDate):
     """An exception class for a date whose date (in month) is out of range"""
-    pass
 
 
 class Month(IntEnum):
@@ -76,27 +79,101 @@ class Month(IntEnum):
     def __format__(self, fmt):
         return str(self)
 
+    def format_month_name(self, fmt, year, date):
+        """ Return the formatted month name
+
+        The result may depend on the year and date"""
+        return format(self, fmt)
+
     def __str__(self):
         return self.name()
 
 
-class Date(object):
+class Date(FormatPercentString):
     """A date class for different calendar types.
 
     The year attribute is an instance of class Year and determines the
-    calendar type."""
+    calendar type.
+
+    Date objects can be formatted using the standard python format command
+    to create a string representing the date under the control of an explicit
+    format string.
+
+    Format Codes
+
+    Directive   Meaning                             Example
+
+    %a          Weekday as an abbreviated name      Sun, Mon, …, Sat
+
+    %a#H        Weekday as an abbreviated name      יום א׳, יום ב׳, …, שבת
+                using Hebrew letters as numbers
+
+    %A          Weekday as full name                Sunday, Monday, …,
+                                                    Saturday
+
+    %A#H        Weekday as full Hebrew name         יום ראשון, יום שני, …, שבת
+
+    %B          Month as full name                  January, February, …,
+                                                    December
+                                                    Nissan, Iyar, …, Ellul
+
+    %B#H        Month as full name in Hebrew        ניסן, אייר, …, אלול
+                letters
+
+    %d          Day of the month as a zero-padded   01, 02, …, 31
+                decimal number                      002, 003, …, 176 (daf)
+
+    %-d         Day of the month as a decimal       1, 2, …, 31
+                number                              2, 3, …, 176 (daf)
+
+    %_d         Day of the month as a space-padded  ' 1', ' 2', …, 31
+                decimal number                      '  2', '  3', …, 176 (daf)
+
+    %~d#H       Day of the month using Hebrew       א׳, ב׳, …, ל׳
+                letters as numbers                  (daf) ב׳, ג׳, …, קע״ו
+
+    %y          Year without century as a           00, 01, …, 99
+                zero-padded decimal number
+
+    %-y         Year without century as a decimal   0, 1, …, 99
+                number
+
+    %_y         Year without century as a           ' 0', ' 1', …, 99
+                space-padded decimal number
+
+    %~y#H       Year without millenium using        א׳, …, תתקצ״ט ,''
+                Hebrew letters as numbers
+
+    %Y          Year as a zero-padded decimal       0000, 0001, …, 9999
+                number
+
+    %-Y         Year as a decimal number            0, 1, …, 9999
+
+    %_Y         Year as a space-padded decimal      '   0', '   1', …, 9999
+                number
+
+    %~Y#H       Year using Hebrew letters as       א׳, ב׳, ה׳תש״פ, …
+                numbers
+
+    %%          A single percent sign              %
+
+    NOTE: '#H' may be specified only once in the formatting string, at its
+    end. It will then qualify all format codes within the formatting string.
+    It is only valid if the year is a HebrewYear or DafYomiCycle
+    """
+
+    SUBFORMATTERS = ('year',)
 
     def __init__(self, year, month, date=None):
         if isinstance(month, AbsTime):
             if month < AbsTime(0, 0, 6):
                 raise BadDate
-            else:
-                year, remainder = year.current_year(month)
-                self.year = year
-                self.month = year.month_class().start_year_month()
-                self.date = year.first_day()
-                days = remainder.days_chalakim[0]
-                self.__iadd__(days)
+            year, remainder = year.current_year(month)
+            self.year = year
+            self.month = year.month_class().start_year_month()
+            self.date = year.first_day()
+            days = remainder.days_chalakim[0]
+            self.__iadd__(days)
         else:
             self.year = year
             (month, self.date) = year.adjust_date(month, date)
@@ -118,10 +195,9 @@ class Date(object):
                                                                   self.date,
                                                                   other)
             return self
-        else:
-            raise TypeError("unsupported operand type(s) for += : " +
-                            "'{0}' and '{1}'".format(self.__class__.__name__,
-                                                     other.__class__.__name__))
+        raise TypeError("unsupported operand type(s) for += : " +
+                        "'{0}' and '{1}'".format(self.__class__.__name__,
+                                                 other.__class__.__name__))
 
     def __isub__(self, other):
         if isinstance(other, int):
@@ -129,10 +205,9 @@ class Date(object):
                                                                   self.date,
                                                                   -other)
             return self
-        else:
-            raise TypeError("unsupported operand type(s) for -= : " +
-                            "'{0}' and '{1}'".format(self.__class__.__name__,
-                                                     other.__class__.__name__))
+        raise TypeError("unsupported operand type(s) for -= : " +
+                        "'{0}' and '{1}'".format(self.__class__.__name__,
+                                                 other.__class__.__name__))
 
     def __add__(self, other):
         total = self
@@ -144,6 +219,7 @@ class Date(object):
         difference -= other
         return difference
 
+    @cached_property
     def day_start(self):
         """Return the absolute time of the start of the current date."""
         return self.year.day_start(self.month, self.date)
@@ -154,14 +230,34 @@ class Date(object):
     def __str__(self):
         return self.__format__("")
 
-    def __format__(self, fmt):
-        return self.year.format_date(self.month, self.date, fmt)
+    def format_year(self, fmt):
+        """ Return the formatted year"""
+        return format(self.year, fmt)
+
+    def format_weekday(self, fmt):
+        """ Return the formatted weekday"""
+        return format(Weekday(self.day_start.days), fmt)
+
+    def format_month_name(self, fmt):
+        """ Return the formatted month name"""
+        return self.month.format_month_name(fmt, self.year, self.date)
+
+    def format_day_of_month(self, fmt):
+        """ Return the day of the month, formatted as 2 digits """
+        return self.year.format_day_of_month(self.date, fmt)
+
+    ESCAPES = {
+        'A': 'format_weekday',
+        'a': 'format_weekday',
+        'B': 'format_month_name',
+        'd': 'format_day_of_month'
+    }
 
 
 LOG = logging.getLogger(__name__)
 
 
-class Year(with_metaclass(ABCMeta, object)):
+class Year(with_metaclass(ABCMeta, FormatPercentString)):
     """Abstract base class for defining the year of different calendar types"""
 
     MIN_DATE = None
@@ -217,7 +313,6 @@ class Year(with_metaclass(ABCMeta, object)):
     @abstractmethod
     def days_in_month(self, month):
         """Return the number of days in the specified month."""
-        pass
 
     @staticmethod
     def first_day():
@@ -365,22 +460,35 @@ class Year(with_metaclass(ABCMeta, object)):
         """
         raise NotImplementedError
 
-    def format_date(self, month, date, fmt):
-        """Returns a formatted unicode string for output of date.
+    def format_short_year(self, fmt):
+        """ Format year (excluding hundreds) as a 2 digit number """
+        return self.format_number(self.value % 100, 2, fmt)
 
-        By default, fmt is ignored. Sub-classes may act differently."""
+    def format_full_year(self, fmt):
+        """ Format year as a 4+ digit number """
+        return self.format_number(self.value, 4, fmt)
 
-        del fmt
-        return u"{0} {1} {2}".format(date, month.name(), self._value)
+    def format_day_of_month(self, day_of_month, fmt):
+        """ Return the day of the month, formatted as 2 digits """
+        return self.format_number(day_of_month, 2, fmt)
 
     @classmethod
     def min_date(cls):
+
         """Calculate the minimum date for this class.
 
         We only need to do it once per class."""
         if cls.MIN_DATE is None:
             cls.MIN_DATE = Date(cls, AbsTime(0, 0, 6))
         return cls.MIN_DATE
+
+    ESCAPES = {
+        'y': 'format_short_year',
+        'Y': 'format_full_year',
+        '_': None,
+        '-': None,
+        '0': None
+    }
 
 
 class RegularYear(Year):
@@ -445,14 +553,110 @@ class RegularYear(Year):
         return year, atime - year.start
 
 
-class DateTime(object):
+class DateTime(FormatPercentString):
     """A class comprising a Date object and a RelTime object.
 
     The object represents an instant in time. It comprises a Date object and
-    a RelTime object (the latter should comprise only hours and chalakim)."""
+    a RelTime object (the latter should comprise only hours and chalakim).
+
+    DateTime objects can be formatted using the standard python format command
+    to create a string representing the date and time under the control of an
+    explicit format string.
+
+    Format Codes
+
+    Directive   Meaning                             Example
+
+    %a          Weekday as an abbreviated name      Sun, Mon, …, Sat
+
+    %a#H        Weekday as an abbreviated name      יום א׳, יום ב׳, …, שבת
+                using Hebrew letters as numbers
+
+    %A          Weekday as full name                Sunday, Monday, …,
+                                                    Saturday
+
+    %A#H        Weekday as full Hebrew name         יום ראשון, יום שני, …, שבת
+
+    %B          Month as full name                  January, February, …,
+                                                    December
+                                                    Nissan, Iyar, …, Ellul
+
+    %B#H        Month as full name in Hebrew        ניסן, אייר, …, אלול
+                letters
+
+    %d          Day of the month as a zero-padded   01, 02, …, 31
+                decimal number                      002, 003, …, 176 (daf)
+
+    %-d         Day of the month as a decimal       1, 2, …, 31
+                number                              2, 3, …, 176 (daf)
+
+    %_d         Day of the month as a space-padded  ' 1', ' 2', …, 31
+                decimal number                      ' 2', ' 3', …, 176 (daf)
+
+    %~d#H       Day of the month using Hebrew       א׳, ב׳, …, ל׳
+                letters as numbers                  (daf) ב׳, ג׳, …, קע״ו
+
+    %H          Hour of the day as a zero-padded    00, 01, …, 23
+                decimal number
+
+    %-H         Hour of the day as a decimal        0, 1, …, 23
+                number
+
+    %_H         Hour of the day as a space-padded   ' 0', ' 1', …, 23
+                decimal number
+
+    %M          Minute of the hour as a             01, 02, …, 59
+                zero-padded decimal number
+
+    %-M         Minute of the hour as a decimal     1, 2, …, 59
+                number
+
+    %_M         Minute of the hour as a             ' 1', ' 2', …, 59
+                space-padded decimal number
+
+    %P          Part (1/18) of the minute as a      00, 01, …, 17
+                zero-padded decimal number
+
+    %-P         Part (1/18) of the minute as a      0, 1, …, 17
+                decimal number
+
+    %_P         Part (1/18) of the minute as a      ' 0', ' 1', …, 17
+                space-padded decimal number
+
+    %y          Year without century as a           00, 01, …, 99
+                zero-padded decimal number
+
+    %-y         Year without century as a decimal   0, 1, …, 99
+                number
+
+    %_y         Year without century as a           ' 0', ' 1', …, 99
+                space-padded decimal number
+
+    %~y#H       Year without millenium using        א׳, …, תתקצ״ט ,''
+                Hebrew letters as numbers
+
+    %Y          Year as a zero-padded decimal       0000, 0001, …, 9999
+                number
+
+    %-Y         Year as a decimal number            0, 1, …, 9999
+
+    %_Y         Year as a space-padded decimal      '   0', '   1', …, 9999
+                number
+
+    %~Y#H       Year using Hebrew letters as       א׳, ב׳, ה׳תש״פ, …
+                numbers
+
+    %%          A single percent sign                   %
+
+    NOTE: '#H' may be specified only once in the formatting string, at its
+    end. It will then qualify all format codes within the formatting string.
+    It is only valid if the year is a HebrewYear or DafYomiCycle.
+    """
+
+    SUBFORMATTERS = ('date', )
 
     def __init__(self, cls, atime):
-        """ Construct a DatTime object
+        """ Construct a DateTime object
 
         :param cls: A subclass of Year
         :param atime: An AbsTime object (a point in time)
@@ -463,3 +667,26 @@ class DateTime(object):
         days, remainder = remainder.days_chalakim
         self.date += days
         self.time = RelTime(0, 0, 0, remainder)
+        self.date.day_start = atime - self.time
+
+    def format_date(self, fmt):
+        """ Format date according to format specified by fmt """
+        return format(self.date, fmt)
+
+    def format_hours(self, fmt):
+        """ Format hours as a 2 digit number """
+        return self.format_number(self.time.hours, 2, fmt)
+
+    def format_minutes(self, fmt):
+        """ Format minutes (excluding hours) as a 2 digit number """
+        return self.format_number(self.time.minutes, 2, fmt)
+
+    def format_chalakim(self, fmt):
+        """ Format chalakim (excluding minutes) as a 2 digit number """
+        return self.format_number(self.time.parts, 2, fmt)
+
+    ESCAPES = {
+        'H': 'format_hours',
+        'M': 'format_minutes',
+        'P': 'format_chalakim'
+    }

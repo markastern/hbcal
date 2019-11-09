@@ -57,17 +57,17 @@ CALENDARS
 {hebrew_months}
 
         The above numbering complies with Exodus 12 v2, and also ensures that
-        months have consistent numbers. However, the year starts with {Tishri:{fmt}}.
-        {Adar Rishon:{fmt}} may be shortened to 2 or 3 letters for a year with 12
+        months have consistent numbers. However, the year starts with {Tishri}.
+        {Adar Rishon} may be shortened to 2 or 3 letters for a year with 12
         months but must be spelled in full (the geresh is not required) for a
         year with 13 months (because otherwise it would be ambiguous).
 
         When input as a number, month 13 is always accepted as valid, but is
-        converted to {Adar Rishon:{fmt}} in a year with 12 months. Similarly, the 30th
-        of {Cheshvan:{fmt}}, which sometimes has 29 days and sometimes has 30 days, is
-        converted to the 1st of {Kislev:{fmt}} in a year in which {Cheshvan:{fmt}} has 29 days.
-        The 30th of {Kislev:{fmt}}, which sometimes has 29 days and sometimes has 30
-        days, is converted to the 1st of {Teveth:{fmt}} in a year in which {Kislev:{fmt}} has
+        converted to {Adar Rishon} in a year with 12 months. Similarly, the 30th
+        of {Cheshvan}, which sometimes has 29 days and sometimes has 30 days, is
+        converted to the 1st of {Kislev} in a year in which {Cheshvan} has 29 days.
+        The 30th of {Kislev}, which sometimes has 29 days and sometimes has 30
+        days, is converted to the 1st of {Teveth} in a year in which {Kislev} has
         29 days.
 
         When used as the input calendar in conjunction with the current date,
@@ -80,12 +80,12 @@ CALENDARS
 
 {tractates}
 
-        {Kinnim:{fmt}}, {Tamid:{fmt}} and {Middos:{fmt}} are considered to be parts of tractate {Meilah:{fmt}}.
+        {Kinnim}, {Tamid} and {Middos} are considered to be parts of tractate {Meilah}.
 
         Years of the Daf Yomi calendar represent Daf Yomi cycles.
 
         Starting from the 8th cycle of Daf Yomi, a different edition of
-        {Shekalim:{fmt}} is used, with 21 daf instead of 12.
+        {Shekalim} is used, with 21 daf instead of 12.
 
         When used as the input calendar in conjunction with the current date,
         the date is assumed to start at 6pm local time if dafbind is set to
@@ -120,6 +120,12 @@ OUTPUT FORMATS FOR HEBREW
         Hebrew characters are output as HTML codes for UTF-8 characters from
         right to left. This is intended for use on web pages.
 
+    Gematria
+
+        Numbers are output as Hebrew letters (gematria). This option may
+        be specified in addition to Normal, Reverse or HTML. If Gematria
+        only is specified, Normal will be assumed (in addition).
+
 SEDRAH
 
         If the sedrah parameter is set, the current weekly sedrah is also
@@ -133,7 +139,9 @@ MOLAD
         If the molad parameter is set, the molad (mean lunar conjunction) for
         the hebrew month containing the input date is output according to all
         the calendars defined by the output calendar parameter. In this case,
-        the input date itself is not output.
+        the input date itself is not output. The time of the molad (hours,
+        minutes and seconds) will be output in Indo-Arabic numerals, even if
+        the Gematria option is specified.
 
 OMER
 

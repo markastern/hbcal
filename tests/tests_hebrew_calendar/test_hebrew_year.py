@@ -1,4 +1,4 @@
-# Copyright 2015 Mark Stern
+# Copyright 2015, 2019 Mark Stern
 #
 # This file is part of Hbcal.
 #
@@ -426,37 +426,37 @@ class TestCurrentDate(unittest.TestCase):
 class TestDayStart(unittest.TestCase):
     def test_start_of_first_year(self):
         self.assertEqual(date.Date(HebrewYear(2),
-                                   HebrewMonth.TISHRI, 1).day_start(),
+                                   HebrewMonth.TISHRI, 1).day_start,
                          AbsTime(0, 6, 0, 0))
 
     def test_second_day(self):
         self.assertEqual(date.Date(HebrewYear(2),
-                                   HebrewMonth.TISHRI, 2).day_start(),
+                                   HebrewMonth.TISHRI, 2).day_start,
                          AbsTime(1, 0, 0, 0))
 
     def test_last_day_tishri(self):
         self.assertEqual(date.Date(HebrewYear(2),
-                                   HebrewMonth.TISHRI, 30).day_start(),
+                                   HebrewMonth.TISHRI, 30).day_start,
                          AbsTime(5, 0, 0, 0))
 
     def test_first_day_cheshvan(self):
         self.assertEqual(date.Date(HebrewYear(2),
-                                   HebrewMonth.CHESHVAN, 1).day_start(),
+                                   HebrewMonth.CHESHVAN, 1).day_start,
                          AbsTime(5, 1, 0, 0))
 
     def test_last_day_ellul(self):
         self.assertEqual(date.Date(HebrewYear(2),
-                                   HebrewMonth.ELLUL, 29).day_start(),
+                                   HebrewMonth.ELLUL, 29).day_start,
                          AbsTime(51, 3, 0, 0))
 
     def test_first_day_second_year(self):
         self.assertEqual(date.Date(HebrewYear(3),
-                                   HebrewMonth.TISHRI, 1).day_start(),
+                                   HebrewMonth.TISHRI, 1).day_start,
                          AbsTime(51, 4, 0, 0))
 
     def test_first_day_recent_year(self):
         self.assertEqual(date.Date(HebrewYear(5775),
-                                   HebrewMonth.TISHRI, 1).day_start(),
+                                   HebrewMonth.TISHRI, 1).day_start,
                          AbsTime(301225, 4, 0, 0))
 
 

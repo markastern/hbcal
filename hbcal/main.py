@@ -33,58 +33,61 @@ try:
 except ImportError:
     from ConfigParser import RawConfigParser
 import os.path as path
+from itertools import chain
+try:
+    from functools import lru_cache
+except ImportError:
+    from functools32 import lru_cache
+from bidi.algorithm import get_display
 from future.builtins import dict
 from future.utils import PY2
-from hbcal.configuration_utilities import (SingleConfigurationParameter,
-                                           MultiConfigurationParameter,
-                                           BinaryConfigurationParameter,
-                                           DuplicateError,
-                                           StoreRestrictiveSet,
-                                           add_negatable_option,
-                                           ArgumentParser)
+from hbcal.configuration_utilities import (
+    SingleConfigurationParameter,
+    MultiConfigurationParameter,
+    BinaryConfigurationParameter,
+    ConfigurationParameterValueError,
+    ConfigurationParameterAmbiguousError,
+    StoreRestrictiveSet,
+    add_negatable_option,
+    ArgumentParser)
 from hbcal.hebrew_calendar.date import Date, DateTime
 from hbcal.hebrew_calendar.daf_yomi import (DafYomiCycle, DateBeforeDafYomi,
                                             SubTractate)
-from hbcal.hebrew_calendar.weekday import Weekday, YOM
+from hbcal.hebrew_calendar.weekday import YOM
 from hbcal.hebrew_calendar.civil_year import (GregorianYear, JulianYear,
                                               BritishYear)
 from hbcal.hebrew_calendar.hebrew_year import HebrewYear
-from hbcal.hebrew_calendar.hebrew_letters import HebrewString
-from hbcal.hebrew_calendar.abs_time import AbsTime
+from hbcal.hebrew_calendar.hebrew_letters import HEBREW_LETTERS
+from hbcal.hebrew_calendar.abs_time import RelTime
+from hbcal.hebrew_calendar.gematria import to_letters
 from hbcal.ordinal import ordinal_suffix
 from hbcal.version import __version__
 
-CALENDAR_TYPES = {"civil": BritishYear, "gregorian": GregorianYear,
+OUTPUT_CLASSES = {"civil": BritishYear, "gregorian": GregorianYear,
                   "hebrew": HebrewYear, "julian": JulianYear,
-                  "daf": DafYomiCycle, }
+                  "daf": DafYomiCycle, "sedrah": HebrewYear,
+                  "omer": HebrewYear}
+CALENDAR_TYPES = frozenset(('civil', 'gregorian', 'hebrew', 'julian', 'daf'))
 DAFBIND_TYPES = [x for x in CALENDAR_TYPES if x != "daf"]
-REGULAR_FORMAT = u"{weekday:{fmt}} {date:{fmt}}"
-REVERSED_FORMAT = u"{date:{fmt}} {weekday:{fmt}}"
-REGULAR_MOLAD_FORMAT = REGULAR_FORMAT + " {time:hmp{fmt}}"
-REVERSED_MOLAD_FORMAT = "{time:hmp{fmt}} " + REVERSED_FORMAT
-BAOMER = HebrewString("{BET}{AYIN}{VAV}{MEM}{RESH}")
+BASE_FORMAT = u'%{weekday_code} %{qualifier}d %B %{qualifier}Y'
+DATE_FORMAT = BASE_FORMAT + '{fmt}'
+MOLAD_FORMAT = BASE_FORMAT + u" %H:%M {conjunction}%-P {parts}{fmt}"
+VAV = u"{VAV}".format(**HEBREW_LETTERS)
+BAOMER = u"{BET}{AYIN}{VAV}{MEM}{RESH}".format(**HEBREW_LETTERS)
+CHALAKIM = u"{CHET}{LAMED}{QOF}{YOD}{FINAL_MEM}".format(**HEBREW_LETTERS)
 ENGLISH_OMER_FORMAT = u"{count}{suffix} day of the omer"
-HEBREW_OMER_FORMAT = HebrewString(u"{YOM:{fmt}} {count} {BAOMER:{fmt}}")
-REVERSED_OMER_FORMAT = HebrewString(u"{BAOMER:{fmt}} {count} {YOM:{fmt}}")
-DAF_FORMAT = u"{date:{fmt}}"
-FORMATS = {"normal": {"format": REGULAR_FORMAT,
-                      "molad": REGULAR_MOLAD_FORMAT,
-                      "omer": HEBREW_OMER_FORMAT,
-                      "fmt": "#H"},
-           "reverse": {"format": REVERSED_FORMAT,
-                       "molad": REVERSED_MOLAD_FORMAT,
-                       "omer": REVERSED_OMER_FORMAT,
-                       "fmt": "#R"},
-           "phonetics": {"format": REGULAR_FORMAT,
-                         "molad": REGULAR_MOLAD_FORMAT,
-                         "omer": ENGLISH_OMER_FORMAT,
-                         "fmt": ""},
-           "html": {"format": REGULAR_FORMAT,
-                    "molad": REGULAR_MOLAD_FORMAT,
-                    "omer": HEBREW_OMER_FORMAT,
-                    "fmt": "#h"}}
-
-FORMAT_TYPES = ['normal', 'reverse', 'html', 'phonetics']
+HEBREW_OMER_FORMAT = u"{YOM} {{count}} {BAOMER}".format(YOM=YOM, BAOMER=BAOMER)
+DAF_FORMAT = '%B %{qualifier}d{fmt}'
+SEDRAH_FORMAT = u"{sedrah:{fmt}}"
+ENGLISH_TEMPLATES = {"civil": DATE_FORMAT, "gregorian": DATE_FORMAT,
+                     "hebrew": DATE_FORMAT, "julian": DATE_FORMAT,
+                     "daf": DAF_FORMAT, "sedrah": SEDRAH_FORMAT,
+                     "omer": ENGLISH_OMER_FORMAT}
+HEBREW_TEMPLATES = {"civil": DATE_FORMAT, "gregorian": DATE_FORMAT,
+                    "hebrew": DATE_FORMAT, "julian": DATE_FORMAT,
+                    "daf": DAF_FORMAT, "sedrah": SEDRAH_FORMAT,
+                    "omer": HEBREW_OMER_FORMAT}
+FORMATS = ['normal', 'reverse', 'phonetics', 'html', 'gematria']
 
 
 def get_config():
@@ -97,8 +100,11 @@ def get_config():
         ('input calendar', SingleConfigurationParameter(CALENDAR_TYPES,
                                                         'civil')),
         ('dafbind', SingleConfigurationParameter(DAFBIND_TYPES, 'civil')),
-        ('format', SingleConfigurationParameter(FORMAT_TYPES, 'normal')),
-        ('output calendar', MultiConfigurationParameter(CALENDAR_TYPES.keys(),
+        ('format', MultiConfigurationParameter(FORMATS, ['normal'],
+                                               (('normal', 'reverse',
+                                                 'phonetics', 'html'),
+                                                ('phonetics', 'gematria')))),
+        ('output calendar', MultiConfigurationParameter(CALENDAR_TYPES,
                                                         ['civil', 'hebrew'],
                                                         (("julian",
                                                           "gregorian",
@@ -119,19 +125,34 @@ def get_config():
     return parameters
 
 
-def list_months(year_class, fmt=''):
+def list_months(year_class, fmt=None):
     """Return a formatted list of values and month names for a Year class.
 
     Parameters:
         year_class: A subclass of Year
+        fmt:        An array of output format options from the command line
     Return:
         A string comprising value, name for each month in year_class
         Months are separated by new lines.
     """
-    return u"\n".join(u"    {value:2d}    {name:{fmt}}".format(value=x.value,
-                                                               name=x,
-                                                               fmt=fmt)
-                      for x in year_class.month_class())
+    line = u"{tab}{value:2d}{tab}{name}"
+    if fmt is None:
+        fmt = ['phonetics']
+    return "\n".join(line.format(tab='    ',
+                                 value=x.value,
+                                 name=x if 'phonetics' in fmt else reformat(
+                                     format(x, '#H'), fmt))
+                     for x in year_class.month_class())
+
+
+def format_month(month, fmt=None):
+    """ Format the month as a name
+
+    The output will be based on the format parameter in the command line."""
+    if fmt is None:
+        fmt = ['phonetics']
+    return format(u'{name}'.format(name=month if 'phonetics' in fmt
+                                   else reformat(format(month, '#H'), fmt)))
 
 
 def parse_arguments(args, parameters):
@@ -154,30 +175,37 @@ def parse_arguments(args, parameters):
     fmt_parser = ArgumentParser(prog=prog_name,
                                 formatter_class=RawDescriptionHelpFormatter,
                                 add_help=False)
-    fmt_parser.add_argument("-f", "--format", nargs=1,
-                            action=StoreRestrictiveSet,
-                            choices=FORMAT_TYPES, type=str.lower,
-                            default=parameters['format'].value,
-                            help="format for output of hebrew")
+    group = fmt_parser.add_mutually_exclusive_group()
+    group.add_argument("-f", "--format", nargs='*',
+                       action=StoreRestrictiveSet,
+                       choices=FORMATS,
+                       mutex_groups=(('normal', 'reverse',
+                                      'phonetics', 'html'),
+                                     ('phonetics', 'gematria')),
+                       type=str.lower,
+                       default=parameters['format'].value,
+                       help="format for output of hebrew")
 
     fmt_args = fmt_parser.parse_known_args(args[1:])[0]
-    fmt = FORMATS[next(iter(fmt_args.format))]['fmt']
+    fmt = '' if 'phonetics' in fmt_args.format else '#H'
     template_directory = path.join(path.dirname(path.realpath(__file__)),
                                    'templates')
     help_file = codecs.open(path.join(template_directory, 'help'),
                             encoding='utf-8')
     epilog = help_file.read().format(
         civil_months=list_months(JulianYear),
-        hebrew_months=list_months(HebrewYear, fmt),
-        tractates=list_months(DafYomiCycle, fmt),
+        hebrew_months=list_months(HebrewYear, fmt_args.format),
+        tractates=list_months(DafYomiCycle, fmt_args.format),
         fmt=fmt,
         # In Python 3.4 we can use more **s to simplify this
         Shekalim=DafYomiCycle.month_class().SHEKALIM,
-        Kinnim=SubTractate.KINNIM,
-        Tamid=SubTractate.TAMID,
-        Middos=SubTractate.MIDDOS,
-        Meilah=DafYomiCycle.month_class().MEILAH,
-        **{x.name(): x for x in HebrewYear.month_class()})
+        Kinnim=format_month(SubTractate.KINNIM, fmt_args.format),
+        Tamid=format_month(SubTractate.TAMID, fmt_args.format),
+        Middos=format_month(SubTractate.MIDDOS, fmt_args.format),
+        Meilah=format_month(DafYomiCycle.month_class().MEILAH,
+                            fmt_args.format),
+        **{x.name(): format_month(x, fmt_args.format)
+           for x in HebrewYear.month_class()})
 
     # Parse command line arguments
     parser = ArgumentParser(prog=prog_name,
@@ -224,54 +252,39 @@ Convert a date to one or more other calendars.""",
                         help="month of the year (integer)")
     parser.add_argument("year", nargs="?", action="store", type=int,
                         help="year (integer)")
-    try:
-        args = parser.parse_args(args[1:])
-    except DuplicateError:
-        parser.error("No more than one of 'gregorian', 'julian', 'civil' " +
-                     "may be specified as an output calendar")
-    for arg in ["input", "format", "dafbind"]:
+    args = parser.parse_args(args[1:])
+    for arg in ["input", "dafbind"]:
         setattr(args, arg, next(iter(getattr(args, arg))))
 
     return args, parser
 
 
-class DateCache(object):
-    """Stores a dictionary of equivalent dates in different calendars."""
-
-    def __init__(self, date):
-        self.dates = {date.year.__class__: date}
-        self.atime = date.day_start()
-        # We want the start of a civil day, so set the hours.
-        self.atime = AbsTime(self.atime.weeks, self.atime.days, 6, 0)
-
-    def __getitem__(self, item):
-        if item in self.dates:
-            return self.dates[item]
-        new_date = Date(item, self.atime)  # Store it for future use
-        self.dates[item] = new_date
-        return new_date
+@lru_cache()
+def get_date_time(atime, date_class):
+    """ Gets a datetime from an abs_time and caches it """
+    return DateTime(date_class, atime)
 
 
-def input_date(args, input_class):
-    """Extracts the input date from the command line parameters."""
+def input_time(args):
+    """ Extracts an abs_time from input parameters """
 
     if args.year is None:
         # Use the current date (with supplied date and month if any)
         current_datetime = datetime.now()
         # If Hebrew specified, add six hours
-        if input_class == HebrewYear or \
-                (input_class == DafYomiCycle and args.dafbind == "hebrew"):
+        if (args.input == 'hebrew'
+                or (args.input == 'daf' and args.dafbind == "hebrew")):
             current_datetime += timedelta(hours=6)
         current_date = Date(GregorianYear(current_datetime.year),
                             current_datetime.month, current_datetime.day)
         if args.date is not None:
-            if input_class not in (GregorianYear, BritishYear):
+            if args.input not in ('gregorian', 'civil'):
                 # Convert it before modifying it
-                atime = current_date.day_start()
-                current_date = Date(input_class, atime)
+                atime = current_date.day_start
+                current_date = Date(OUTPUT_CLASSES[args.input], atime)
         current_year = current_date.year
     else:
-        current_year = input_class(args.year)
+        current_year = OUTPUT_CLASSES[args.input](args.year)
     if args.month is None:
         month = current_date.month
     else:
@@ -280,8 +293,18 @@ def input_date(args, input_class):
         except ValueError:
             month = get_month_from_name(args.month.capitalize(),
                                         current_year)
-    return Date(current_year, month,
-                args.date if args.date is not None else current_date.date)
+    input_date = Date(current_year, month,
+                      current_date.date if args.date is None else args.date)
+    atime = input_date.day_start
+    if args.molad:
+        hebrew_date = get_date_time(atime, HebrewYear)
+        atime = hebrew_date.date.year.molad(hebrew_date.date.month)
+    else:
+        if (input_date.year.__class__ == HebrewYear
+                or (input_date.year.__class__ == DafYomiCycle
+                    and args.dafbind == "hebrew")):
+            atime += RelTime(0, hours=6)
+    return atime
 
 
 def get_month_from_name(month_name, current_year):
@@ -300,6 +323,17 @@ def get_month_from_name(month_name, current_year):
     return month
 
 
+def reformat(line, formatting_options):
+    """ Reformat a Hebrew line for bi-directional output or as html """
+    if 'reverse' in formatting_options:
+        reformatted = get_display(line, base_dir='R')
+    elif 'html' in formatting_options:
+        reformatted = line.encode('ascii', 'xmlcharrefreplace').decode('ascii')
+    else:
+        reformatted = line
+    return reformatted
+
+
 def get_output_line(argv):
     """Generator that returns lines of output as unicode strings.
 
@@ -310,61 +344,62 @@ def get_output_line(argv):
     """
     args, parser = parse_arguments(argv, get_config())
     try:
-        date_cache = DateCache(input_date(args, CALENDAR_TYPES[args.input]))
+        atime = input_time(args)
     except ValueError:
         parser.error("Invalid date")
 
-    if args.molad:
-        hebrew_date = date_cache[HebrewYear]
-        # Now get the time of the molad
-        atime = hebrew_date.year.molad(hebrew_date.month)
-        weekday = Weekday(atime.days)
-    else:
-        weekday = Weekday(date_cache.atime.days)
-
-    for output_type in args.output:
-        output_class = CALENDAR_TYPES[output_type]
-        output_data = FORMATS[args.format if output_type in ("hebrew", "daf")
-                              else "phonetics"]
-        if output_type == "daf":
-            try:
-                date = date_cache[output_class]
-            except DateBeforeDafYomi:
-                # Just skip this output format
-                pass
-            else:
-                yield DAF_FORMAT.format(date=date, **output_data)
+    for output_type in chain(args.output,
+                             [x for x in ['sedrah', 'omer']
+                              if getattr(args, x)]):
+        output_class = OUTPUT_CLASSES[output_type]
+        if (output_class in (HebrewYear, DafYomiCycle)
+                and 'phonetics' not in args.format):
+            template = HEBREW_TEMPLATES[output_type]
+            params = {
+                'fmt': '#H',
+                'conjunction': VAV,
+                'parts': CHALAKIM
+            }
         else:
+            template = ENGLISH_TEMPLATES[output_type]
+            params = {
+                'fmt': '',
+                'conjunction': 'and ',
+                'parts': 'parts'
+            }
+        if (output_type in ("hebrew", "daf", "omer")
+                and 'gematria' in args.format):
+            params['qualifier'] = '~'
+            params['weekday_code'] = 'a'
+            params['conjunction'] = ''
+        else:
+            params['qualifier'] = '-'
+            params['weekday_code'] = 'A'
+        try:
+            value = get_date_time(atime, OUTPUT_CLASSES[output_type])
             if args.molad:
-                molad_datetime = DateTime(output_class, atime)
-                yield output_data['molad'].format(weekday=weekday,
-                                                  date=molad_datetime.date,
-                                                  time=molad_datetime.time,
-                                                  **output_data)
+                template = MOLAD_FORMAT
             else:
-                yield output_data['format'].\
-                    format(weekday=weekday,
-                           date=date_cache[output_class],
-                           **output_data)
-
-    output_data = FORMATS[args.format]
-    if args.sedrah:
-        hebrew_date = date_cache[HebrewYear]
-        sedrah = hebrew_date.year.sedrah(hebrew_date.month,
-                                         hebrew_date.date,
-                                         args.israel)
-        yield u"{sedrah:{fmt}}".format(sedrah=sedrah, **output_data)
-    if args.omer:
-        hebrew_date = date_cache[HebrewYear]
-        omer = hebrew_date.year.omer_day(hebrew_date.month,
-                                         hebrew_date.date)
-        if omer is not None:
-            suffix = ordinal_suffix(omer) if output_data['fmt'] == '' else ''
-            yield output_data['omer'].format(count=omer,
-                                             suffix=suffix,
-                                             YOM=YOM,
-                                             BAOMER=BAOMER,
-                                             **output_data)
+                if output_type == 'sedrah':
+                    params['sedrah'] = value.date.year.sedrah(value.date.month,
+                                                              value.date.date,
+                                                              args.israel)
+                elif output_type == 'omer':
+                    omer = value.date.year.omer_day(value.date.month,
+                                                    value.date.date)
+                    if omer is None:
+                        continue
+                    params['suffix'] = ordinal_suffix(omer)
+                    if params['qualifier'] == '~':
+                        omer = to_letters(omer).format(**HEBREW_LETTERS)
+                    params['count'] = omer
+            yield reformat(format(value, template.format(**params)),
+                           args.format if output_class in (HebrewYear,
+                                                           DafYomiCycle)
+                           else [])
+        except DateBeforeDafYomi:
+            # Just skip this output format
+            pass
 
 
 def main(argv=None):
@@ -378,8 +413,13 @@ def main(argv=None):
     """
     if argv is None:
         argv = sys.argv
-    for output_line in get_output_line(argv):
-        print(output_line)
+    try:
+        for output_line in get_output_line(argv):
+            print(output_line)
+    except (ConfigurationParameterValueError,
+            ConfigurationParameterAmbiguousError) as ex:
+        print(ex.message, file=sys.stderr)
+        sys.exit(1)
 
 
 if __name__ == "__main__":

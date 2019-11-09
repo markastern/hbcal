@@ -20,8 +20,10 @@ from enum import Enum
 from future.builtins import super
 
 from .abs_time import AbsTime, DAY
-from .hebrew_letters import HebrewString
+from .hebrew_letters import HEBREW_LETTERS
+from .gematria import to_letters
 from .date import Month, Year, Date, DateBeforeCreation, BadDate
+from .format_percent_string import UnknownFlagError
 
 
 HEBREW_TRACTATE_NAMES = [
@@ -65,6 +67,26 @@ HEBREW_TRACTATE_NAMES = [
     u"{NUN}{DALET}{HE}"]
 
 
+HEBREW_SUBTRACTATE_NAMES = [
+    None,
+    u"{QOF}{NUN}{YOD}{FINAL_MEM}",
+    u"{TAV}{MEM}{YOD}{DALET}",
+    u"{MEM}{DALET}{VAV}{TAV}"]
+
+
+class SubTractate(Enum):
+    """An enumeration class of parts of Meilah in the Talmud"""
+    KINNIM = 1
+    TAMID = 2
+    MIDDOS = 3
+
+    def __format__(self, fmt):
+        _, _, option = fmt.partition('#')
+        if option == "":
+            return self.name
+        return HEBREW_SUBTRACTATE_NAMES[self._value_].format(**HEBREW_LETTERS)
+
+
 class Tractate(Month):
     """An enumeration class of tractates of Talmud Bavi"""
     BERACHOS = 1
@@ -106,9 +128,37 @@ class Tractate(Month):
     NIDAH = 37
 
     def __format__(self, fmt):
-        if fmt == "":
+        _, _, option = fmt.partition('#')
+        if option == "":
             return self.name()
-        return HebrewString(HEBREW_TRACTATE_NAMES[self]).__format__(fmt)
+        return HEBREW_TRACTATE_NAMES[self].format(**HEBREW_LETTERS)
+
+    def format_month_name(self, fmt, cycle, page):
+        # Kinnim, Tamid and Middos appear on pages 22 to 37 of Meilah (in the
+        # standard Vilna edition).
+        MEILAH_PARTS = {22: (Tractate.MEILAH, SubTractate.KINNIM),
+                        23: (SubTractate.KINNIM,),
+                        24: (SubTractate.KINNIM,),
+                        25: (SubTractate.KINNIM, SubTractate.TAMID),
+                        26: (SubTractate.TAMID,),
+                        27: (SubTractate.TAMID,),
+                        28: (SubTractate.TAMID,),
+                        29: (SubTractate.TAMID,),
+                        30: (SubTractate.TAMID,),
+                        31: (SubTractate.TAMID,),
+                        32: (SubTractate.TAMID,),
+                        33: (SubTractate.TAMID,),
+                        34: (SubTractate.MIDDOS,),
+                        35: (SubTractate.MIDDOS,),
+                        36: (SubTractate.MIDDOS,),
+                        37: (SubTractate.MIDDOS,)}
+
+        tractate_name = format(self, fmt).replace("_", " ")
+
+        if self == Tractate.MEILAH and page in MEILAH_PARTS:
+            tractate_name += u" ({parts})".format(parts="/".join(
+                (format(x, fmt) for x in MEILAH_PARTS[page])))
+        return tractate_name
 
     @staticmethod
     def start_year_month():
@@ -119,29 +169,8 @@ class Tractate(Month):
         return Tractate.NIDAH
 
 
-HEBREW_SUBTRACTATE_NAMES = [
-    None,
-    u"{QOF}{NUN}{YOD}{FINAL_MEM}",
-    u"{TAV}{MEM}{YOD}{DALET}",
-    u"{MEM}{DALET}{VAV}{TAV}"]
-
-
-class SubTractate(Enum):
-    """An enumeration class of parts of Meilah in the Talmud"""
-    KINNIM = 1
-    TAMID = 2
-    MIDDOS = 3
-
-    def __format__(self, fmt):
-        if fmt == "":
-            return self.name
-        return HebrewString(
-            HEBREW_SUBTRACTATE_NAMES[self._value_]).__format__(fmt)
-
-
 class DateBeforeDafYomi(BadDate):
     """An exception class for dates before the first Daf Yomi cycle."""
-    pass
 
 
 class DafYomiCycle(Year):
@@ -212,10 +241,9 @@ class DafYomiCycle(Year):
         dapim = self.DAPIM[month]
         if isinstance(dapim, int):
             return dapim
-        elif callable(dapim):
+        if callable(dapim):
             return dapim(self)
-        else:
-            raise TypeError
+        raise TypeError
 
     def days_in_year(self):
         return self.CYCLE_DAYS_ORIGINAL if self.value < self.SHEKALIM_CHANGE \
@@ -249,17 +277,15 @@ class DafYomiCycle(Year):
     def current_year(cls, atime):
         if atime < cls.START_FIRST_YEAR:
             raise DateBeforeDafYomi
+        if atime < cls.START_SHEKALIM_CHANGE_YEAR:
+            year, remainder = divmod(atime - cls.START_FIRST_YEAR,
+                                     cls.CYCLE_DAYS_ORIGINAL * DAY)
+            year += cls.FIRST_YEAR
         else:
-            if atime < cls.START_SHEKALIM_CHANGE_YEAR:
-                year, remainder = divmod(atime - cls.START_FIRST_YEAR,
-                                         cls.CYCLE_DAYS_ORIGINAL * DAY)
-                year += cls.FIRST_YEAR
-            else:
-                year, remainder = divmod(atime -
-                                         cls.START_SHEKALIM_CHANGE_YEAR,
-                                         cls.CYCLE_DAYS_NOW * DAY)
-                year += cls.SHEKALIM_CHANGE
-            return(cls(year), remainder)
+            year, remainder = divmod(atime - cls.START_SHEKALIM_CHANGE_YEAR,
+                                     cls.CYCLE_DAYS_NOW * DAY)
+            year += cls.SHEKALIM_CHANGE
+        return(cls(year), remainder)
 
     @classmethod
     def min_date(cls):
@@ -270,18 +296,21 @@ class DafYomiCycle(Year):
             cls.MIN_DATE = Date(cls, cls.START_FIRST_YEAR)
         return cls.MIN_DATE
 
-    def format_date(self, tractate, page, fmt):
-        tractate_name = format(tractate, fmt).replace("_", " ")
-        date_fmt = u"{page} {extra}{tractate}" if fmt == "#R" \
-            else u"{tractate}{extra} {page}"
-        if tractate == Tractate.MEILAH and page in self.MEILAH_PARTS:
-            index = -1 if fmt == "#R" else 1
-            extra = ''.join((' ',
-                             '(' +
-                             "/".join([format(x, fmt)
-                                       for x in self.MEILAH_PARTS[page]
-                                       [::index]]) +
-                             ")")[::index])
-        else:
-            extra = ""
-        return date_fmt.format(tractate=tractate_name, page=page, extra=extra)
+    def format_day_of_month(self, daf_of_tractate, fmt):
+        """ Return the number of the daf, formatted as 3 digits """
+        return self.format_number(daf_of_tractate, 3, fmt)
+
+    @classmethod
+    def format_number(cls, value, places, fmt):
+        try:
+            return super().format_number(value, places, fmt, True)
+        except UnknownFlagError as exception:
+            if exception.flag == '~':
+                return to_letters(value)
+            raise exception
+
+    class GematriaFlag(object):
+        """ A dummy class used to add '~' to the allowed flags. """
+        escapes = {"~": None}
+
+    SUBFORMATTERS = ('GematriaFlag',)

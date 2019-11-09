@@ -1,4 +1,4 @@
-# Copyright 2015 Mark Stern
+# Copyright 2015, 2019 Mark Stern
 #
 # This file is part of Hbcal.
 #
@@ -269,37 +269,37 @@ class TestCurrentDate(unittest.TestCase):
 class TestDayStart(unittest.TestCase):
     def test_start_of_first_year(self):
         self.assertEqual(date.Date(JulianYear(-3758),
-                                   CivilMonth.JANUARY, 1).day_start(),
+                                   CivilMonth.JANUARY, 1).day_start,
                          AbsTime(14, 4, 6, 0))
 
     def test_second_day(self):
         self.assertEqual(date.Date(JulianYear(-3758),
-                                   CivilMonth.JANUARY, 2).day_start(),
+                                   CivilMonth.JANUARY, 2).day_start,
                          AbsTime(14, 5, 6, 0))
 
     def test_last_day_january(self):
         self.assertEqual(date.Date(JulianYear(-3758),
-                                   CivilMonth.JANUARY, 31).day_start(),
+                                   CivilMonth.JANUARY, 31).day_start,
                          AbsTime(18, 6, 6, 0))
 
     def test_first_day_february(self):
         self.assertEqual(date.Date(JulianYear(-3758),
-                                   CivilMonth.FEBRUARY, 1).day_start(),
+                                   CivilMonth.FEBRUARY, 1).day_start,
                          AbsTime(19, 0, 6, 0))
 
     def test_last_day_december(self):
         self.assertEqual(date.Date(JulianYear(-3758),
-                                   CivilMonth.DECEMBER, 31).day_start(),
+                                   CivilMonth.DECEMBER, 31).day_start,
                          AbsTime(66, 4, 6, 0))
 
     def test_first_day_second_year(self):
         self.assertEqual(date.Date(JulianYear(-3757),
-                                   CivilMonth.JANUARY, 1).day_start(),
+                                   CivilMonth.JANUARY, 1).day_start,
                          AbsTime(66, 5, 6, 0))
 
     def test_first_day_recent_year(self):
         self.assertEqual(date.Date(JulianYear(2000),
-                                   CivilMonth.JANUARY, 1).day_start(),
+                                   CivilMonth.JANUARY, 1).day_start,
                          AbsTime(300458, 5, 6, 0))
 
 

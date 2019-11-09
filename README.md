@@ -52,4 +52,13 @@ Month can now be specified as a word instead of a number.
 ## Changes in version 0.10.1
 Fixed html output when displaying time of molad.
 
+## Changes in version 0.11.0
+Added gematria formatting option.
+Date and DateTime objects can now be formatted using the python format
+function, with more formatting options (for use as a library) than
+are available on the command line. See the class docstrings for more
+information.
+This will probably be the last release that supports Python 2.7 (and
+maybe 3.4 also).
+
 By Mark Stern (markalexstern@gmail.com)
